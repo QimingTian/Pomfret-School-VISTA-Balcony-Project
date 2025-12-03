@@ -65,13 +65,13 @@ class MJPEGLoader: ObservableObject {
         }
         
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 300
+        config.timeoutIntervalForRequest = 60  // Increased for slow networks
+        config.timeoutIntervalForResource = 600  // 10 minutes total
         
         session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
         
         var request = URLRequest(url: streamURL)
-        request.timeoutInterval = 30
+        request.timeoutInterval = 60  // Increased for slow networks
         
         task = session?.dataTask(with: request)
         task?.resume()

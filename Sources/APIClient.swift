@@ -28,7 +28,7 @@ class APIClient {
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.timeoutInterval = 10
+        request.timeoutInterval = 30  // Increased for cross-subnet connections
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -141,7 +141,7 @@ class APIClient {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 10
+        request.timeoutInterval = 30  // Increased for cross-subnet connections
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
