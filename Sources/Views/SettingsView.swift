@@ -2,8 +2,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var appState: AppState
-    @AppStorage("connectedControllers") private var connectedControllersData: Data = Data()
-    @State private var connectedControllers: Set<UUID> = []
     
     var body: some View {
         ScrollView {
@@ -11,7 +9,7 @@ struct SettingsView: View {
                 ForEach(appState.controllers) { controller in
                     ControllerSettingsCard(
                         controller: controller,
-                        isConnected: connectedControllers.contains(controller.id),
+                        isConnected: appState.connectedControllers.contains(controller.id),
                         canRemove: appState.controllers.count > 1,
                         onConnect: { 
                             connectController(controller)
@@ -37,21 +35,13 @@ struct SettingsView: View {
             }
             .padding()
         }
-        .onAppear {
-            loadConnectedControllers()
-            // Auto-fetch status for connected controllers
-            for controller in appState.controllers where connectedControllers.contains(controller.id) {
-                controller.fetchStatus()
-            }
-        }
     }
     
     private func connectController(_ controller: ControllerState) {
         appState.addLog(level: .info, module: "settings", message: "Connecting to \(controller.name)...", controller: controller)
         
-        // Mark as connected
-        connectedControllers.insert(controller.id)
-        saveConnectedControllers()
+        // Mark as connected in global state - persists across view changes
+        appState.connectedControllers.insert(controller.id)
         
         // Fetch initial status
         controller.fetchStatus()
@@ -59,21 +49,8 @@ struct SettingsView: View {
     }
     
     private func disconnectController(_ controller: ControllerState) {
-        connectedControllers.remove(controller.id)
-        saveConnectedControllers()
+        appState.connectedControllers.remove(controller.id)
         appState.addLog(level: .info, module: "settings", message: "Disconnected from \(controller.name)", controller: controller)
-    }
-    
-    private func loadConnectedControllers() {
-        if let decoded = try? JSONDecoder().decode(Set<UUID>.self, from: connectedControllersData) {
-            connectedControllers = decoded
-        }
-    }
-    
-    private func saveConnectedControllers() {
-        if let encoded = try? JSONEncoder().encode(connectedControllers) {
-            connectedControllersData = encoded
-        }
     }
 }
 

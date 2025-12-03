@@ -7,6 +7,7 @@ final class AppState: ObservableObject {
     @Published var selection: AppSection = .roof
     @Published private(set) var controllers: [ControllerState] = []
     @Published private(set) var activeControllerIDs: [ControllerRole: UUID] = [:]
+    @Published var connectedControllers: Set<UUID> = []  // Track connected controllers
     @Published var logs: [LogEntry] = []
     @Published var weather: WeatherModel = WeatherModel()
     
