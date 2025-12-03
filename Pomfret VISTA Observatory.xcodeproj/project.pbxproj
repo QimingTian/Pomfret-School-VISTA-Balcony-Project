@@ -1,0 +1,477 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0BC746162EDFA5B800860A77 /* CameraStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC746152EDFA5B800860A77 /* CameraStreamView.swift */; };
+		0BC746182EDFC1D900860A77 /* MJPEGStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */; };
+		0BD7526A2ECA9F23004EEF35 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525F2ECA9F23004EEF35 /* LogsView.swift */; };
+		0BD7526B2ECA9F23004EEF35 /* MenuBarPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752672ECA9F23004EEF35 /* MenuBarPresenter.swift */; };
+		0BD7526C2ECA9F23004EEF35 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752622ECA9F23004EEF35 /* SettingsView.swift */; };
+		0BD7526D2ECA9F23004EEF35 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752652ECA9F23004EEF35 /* AppState.swift */; };
+		0BD7526E2ECA9F23004EEF35 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525E2ECA9F23004EEF35 /* LoginView.swift */; };
+		0BD7526F2ECA9F23004EEF35 /* RoofView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752602ECA9F23004EEF35 /* RoofView.swift */; };
+		0BD752702ECA9F23004EEF35 /* ObservatoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752682ECA9F23004EEF35 /* ObservatoryApp.swift */; };
+		0BD752712ECA9F23004EEF35 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752662ECA9F23004EEF35 /* ContentView.swift */; };
+		0BD752732ECA9F23004EEF35 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */; };
+		0BD752742ECA9F23004EEF35 /* SensorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752612ECA9F23004EEF35 /* SensorsView.swift */; };
+		0BD752752ECA9F23004EEF35 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752642ECA9F23004EEF35 /* APIClient.swift */; };
+		0BD752762ECA9F23004EEF35 /* ConfirmDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */; };
+		0BD7527D2ECAA815004EEF35 /* assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BD7527C2ECAA815004EEF35 /* assets.xcassets */; };
+		0BD7527E2ECE2069004EEF35 /* ControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7527F2ECE2069004EEF35 /* ControllerState.swift */; };
+		0BD752802ECE27C9004EEF35 /* WeatherClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752812ECE27C9004EEF35 /* WeatherClient.swift */; };
+		0BD758002ED057D500123456 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD758012ED057D500123456 /* WeatherView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pomfret VISTA Observatory.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BC746152EDFA5B800860A77 /* CameraStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CameraStreamView.swift; path = ../CameraStreamView.swift; sourceTree = SOURCE_ROOT; };
+		0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MJPEGStreamView.swift; sourceTree = "<group>"; };
+		0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDialog.swift; sourceTree = "<group>"; };
+		0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
+		0BD7525E2ECA9F23004EEF35 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		0BD7525F2ECA9F23004EEF35 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
+		0BD752602ECA9F23004EEF35 /* RoofView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoofView.swift; sourceTree = "<group>"; };
+		0BD752612ECA9F23004EEF35 /* SensorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorsView.swift; sourceTree = "<group>"; };
+		0BD752622ECA9F23004EEF35 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		0BD752642ECA9F23004EEF35 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		0BD752652ECA9F23004EEF35 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		0BD752662ECA9F23004EEF35 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0BD752672ECA9F23004EEF35 /* MenuBarPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPresenter.swift; sourceTree = "<group>"; };
+		0BD752682ECA9F23004EEF35 /* ObservatoryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservatoryApp.swift; sourceTree = "<group>"; };
+		0BD7527C2ECAA815004EEF35 /* assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = assets.xcassets; sourceTree = "<group>"; };
+		0BD7527F2ECE2069004EEF35 /* ControllerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControllerState.swift; sourceTree = "<group>"; };
+		0BD752812ECE27C9004EEF35 /* WeatherClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherClient.swift; sourceTree = "<group>"; };
+		0BD758012ED057D500123456 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0BC2AD632ECA607B00E323EF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0BC2AD5D2ECA607B00E323EF = {
+			isa = PBXGroup;
+			children = (
+				0BD7527C2ECAA815004EEF35 /* assets.xcassets */,
+				0BD752692ECA9F23004EEF35 /* Sources */,
+				0BC2AD672ECA607B00E323EF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0BC2AD672ECA607B00E323EF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0BD7525C2ECA9F23004EEF35 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				0BC746152EDFA5B800860A77 /* CameraStreamView.swift */,
+				0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */,
+				0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */,
+				0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		0BD752632ECA9F23004EEF35 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				0BD7525C2ECA9F23004EEF35 /* Components */,
+				0BD7525E2ECA9F23004EEF35 /* LoginView.swift */,
+				0BD7525F2ECA9F23004EEF35 /* LogsView.swift */,
+				0BD758012ED057D500123456 /* WeatherView.swift */,
+				0BD752602ECA9F23004EEF35 /* RoofView.swift */,
+				0BD752612ECA9F23004EEF35 /* SensorsView.swift */,
+				0BD752622ECA9F23004EEF35 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0BD752692ECA9F23004EEF35 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				0BD752632ECA9F23004EEF35 /* Views */,
+				0BD7527E2ECE203E004EEF35 /* Models */,
+				0BD752642ECA9F23004EEF35 /* APIClient.swift */,
+				0BD752652ECA9F23004EEF35 /* AppState.swift */,
+				0BD752662ECA9F23004EEF35 /* ContentView.swift */,
+				0BD752672ECA9F23004EEF35 /* MenuBarPresenter.swift */,
+				0BD752682ECA9F23004EEF35 /* ObservatoryApp.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		0BD7527E2ECE203E004EEF35 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0BD7527F2ECE2069004EEF35 /* ControllerState.swift */,
+				0BD752812ECE27C9004EEF35 /* WeatherClient.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0BC2AD652ECA607B00E323EF /* Pomfret VISTA Observatory */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret VISTA Observatory" */;
+			buildPhases = (
+				0BC2AD622ECA607B00E323EF /* Sources */,
+				0BC2AD632ECA607B00E323EF /* Frameworks */,
+				0BC2AD642ECA607B00E323EF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Pomfret VISTA Observatory";
+			packageProductDependencies = (
+			);
+			productName = "Pomfret VISTA Observatory";
+			productReference = 0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0BC2AD5E2ECA607B00E323EF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2610;
+				LastUpgradeCheck = 2610;
+				TargetAttributes = {
+					0BC2AD652ECA607B00E323EF = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
+				};
+			};
+			buildConfigurationList = 0BC2AD612ECA607B00E323EF /* Build configuration list for PBXProject "Pomfret VISTA Observatory" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 0BC2AD5D2ECA607B00E323EF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0BC2AD672ECA607B00E323EF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0BC2AD652ECA607B00E323EF /* Pomfret VISTA Observatory */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0BC2AD642ECA607B00E323EF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0BD7527D2ECAA815004EEF35 /* assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0BC2AD622ECA607B00E323EF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0BD7526A2ECA9F23004EEF35 /* LogsView.swift in Sources */,
+				0BC746162EDFA5B800860A77 /* CameraStreamView.swift in Sources */,
+				0BD7526B2ECA9F23004EEF35 /* MenuBarPresenter.swift in Sources */,
+				0BD7526C2ECA9F23004EEF35 /* SettingsView.swift in Sources */,
+				0BD7526D2ECA9F23004EEF35 /* AppState.swift in Sources */,
+				0BD7526E2ECA9F23004EEF35 /* LoginView.swift in Sources */,
+				0BD7526F2ECA9F23004EEF35 /* RoofView.swift in Sources */,
+				0BD752702ECA9F23004EEF35 /* ObservatoryApp.swift in Sources */,
+				0BD752712ECA9F23004EEF35 /* ContentView.swift in Sources */,
+				0BD752732ECA9F23004EEF35 /* StatusBadge.swift in Sources */,
+				0BD752742ECA9F23004EEF35 /* SensorsView.swift in Sources */,
+				0BD752752ECA9F23004EEF35 /* APIClient.swift in Sources */,
+				0BD752762ECA9F23004EEF35 /* ConfirmDialog.swift in Sources */,
+				0BD7527E2ECE2069004EEF35 /* ControllerState.swift in Sources */,
+				0BD752802ECE27C9004EEF35 /* WeatherClient.swift in Sources */,
+				0BD758002ED057D500123456 /* WeatherView.swift in Sources */,
+				0BC746182EDFC1D900860A77 /* MJPEGStreamView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0BC2AD6F2ECA607C00E323EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		0BC2AD702ECA607C00E323EF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		0BC2AD722ECA607C00E323EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = YES;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = YES;
+				ENABLE_RESOURCE_ACCESS_USB = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "James-Tian.Pomfret-VISTA-Observatory";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0BC2AD732ECA607C00E323EF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				AUTOMATION_APPLE_EVENTS = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = YES;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = YES;
+				ENABLE_RESOURCE_ACCESS_USB = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = "James-Tian.Pomfret-VISTA-Observatory";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0BC2AD612ECA607B00E323EF /* Build configuration list for PBXProject "Pomfret VISTA Observatory" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BC2AD6F2ECA607C00E323EF /* Debug */,
+				0BC2AD702ECA607C00E323EF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret VISTA Observatory" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0BC2AD722ECA607C00E323EF /* Debug */,
+				0BC2AD732ECA607C00E323EF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0BC2AD5E2ECA607B00E323EF /* Project object */;
+}
