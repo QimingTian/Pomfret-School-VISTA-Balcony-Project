@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0BC746162EDFA5B800860A77 /* CameraStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC746152EDFA5B800860A77 /* CameraStreamView.swift */; };
 		0BC746182EDFC1D900860A77 /* MJPEGStreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */; };
 		0BD7526A2ECA9F23004EEF35 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525F2ECA9F23004EEF35 /* LogsView.swift */; };
 		0BD7526B2ECA9F23004EEF35 /* MenuBarPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752672ECA9F23004EEF35 /* MenuBarPresenter.swift */; };
@@ -29,7 +28,6 @@
 
 /* Begin PBXFileReference section */
 		0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pomfret VISTA Observatory.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0BC746152EDFA5B800860A77 /* CameraStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CameraStreamView.swift; path = ../CameraStreamView.swift; sourceTree = SOURCE_ROOT; };
 		0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MJPEGStreamView.swift; sourceTree = "<group>"; };
 		0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDialog.swift; sourceTree = "<group>"; };
 		0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
@@ -80,7 +78,6 @@
 		0BD7525C2ECA9F23004EEF35 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				0BC746152EDFA5B800860A77 /* CameraStreamView.swift */,
 				0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */,
 				0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */,
 				0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */,
@@ -198,7 +195,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BD7526A2ECA9F23004EEF35 /* LogsView.swift in Sources */,
-				0BC746162EDFA5B800860A77 /* CameraStreamView.swift in Sources */,
 				0BD7526B2ECA9F23004EEF35 /* MenuBarPresenter.swift in Sources */,
 				0BD7526C2ECA9F23004EEF35 /* SettingsView.swift in Sources */,
 				0BD7526D2ECA9F23004EEF35 /* AppState.swift in Sources */,
