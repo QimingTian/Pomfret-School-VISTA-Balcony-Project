@@ -68,19 +68,19 @@ private struct ControllerSettingsCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 TextField("Controller Name", text: $controller.name)
                     .textFieldStyle(.roundedBorder)
-                    .onChange(of: controller.name) { _, _ in onChange() }
+                    .onChange(of: controller.name) { _ in onChange() }
                 
                 TextField("Base URL", text: $controller.baseURL)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
-                    .onChange(of: controller.baseURL) { _, _ in onChange() }
+                    .onChange(of: controller.baseURL) { _ in onChange() }
                 
                 SecureField("Auth Token (optional)", text: Binding(
                     get: { controller.authToken ?? "" },
                     set: { controller.authToken = $0.isEmpty ? nil : $0 }
                 ))
                 .textFieldStyle(.roundedBorder)
-                .onChange(of: controller.authToken) { _, _ in onChange() }
+                .onChange(of: controller.authToken) { _ in onChange() }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Controller Roles").font(.subheadline).foregroundColor(.secondary)
