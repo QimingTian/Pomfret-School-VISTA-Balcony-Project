@@ -13,7 +13,19 @@ class APIClient {
     // MARK: - Status
     
     func fetchStatus() async throws -> StatusResponse {
-        let url = URL(string: baseURL + "/status")!
+        var urlString = baseURL.trimmingCharacters(in: .whitespaces)
+        if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {
+            urlString = "http://" + urlString
+        }
+        if urlString.hasSuffix("/") {
+            urlString = String(urlString.dropLast())
+        }
+        urlString += "/status"
+        
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 10
@@ -70,7 +82,19 @@ class APIClient {
     }
     
     func captureSnapshot() async throws -> Data {
-        let url = URL(string: baseURL + "/camera/snapshot")!
+        var urlString = baseURL.trimmingCharacters(in: .whitespaces)
+        if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {
+            urlString = "http://" + urlString
+        }
+        if urlString.hasSuffix("/") {
+            urlString = String(urlString.dropLast())
+        }
+        urlString += "/camera/snapshot"
+        
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 30
@@ -102,7 +126,19 @@ class APIClient {
     }
     
     private func post<T: Decodable>(_ path: String, responseType: T.Type) async throws -> T {
-        let url = URL(string: baseURL + path)!
+        var urlString = baseURL.trimmingCharacters(in: .whitespaces)
+        if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {
+            urlString = "http://" + urlString
+        }
+        if urlString.hasSuffix("/") {
+            urlString = String(urlString.dropLast())
+        }
+        urlString += path
+        
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.timeoutInterval = 10
