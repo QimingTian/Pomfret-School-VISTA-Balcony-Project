@@ -187,6 +187,7 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 ZStack {
                     MJPEGStreamView(url: "\(controller.baseURL)/camera/stream")
                         .frame(height: 500)
+                        .id("\(controller.id)-stream")  // Unique ID per controller
                     
                     // LIVE 指示器
                     VStack {
@@ -268,6 +269,10 @@ private func capturePhoto(controller: ControllerState, appState: AppState, captu
                     showingPhotoViewer.wrappedValue = true
                 }
                 appState.addLog(level: .info, module: "camera", message: "Photo captured: \(Int(image.size.width))×\(Int(image.size.height))", controller: controller)
+                
+                // Refresh status after photo capture to ensure streaming state is updated
+                try await Task.sleep(nanoseconds: 1_000_000_000) // Wait 1 second for stream to restart
+                controller.fetchStatus()
             } else {
                 appState.addLog(level: .error, module: "camera", message: "Failed to decode photo", controller: controller)
             }

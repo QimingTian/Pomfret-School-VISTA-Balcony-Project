@@ -80,6 +80,14 @@ class MJPEGLoader: ObservableObject {
         
         print("Starting MJPEG stream from: \(url)")
         
+        // Clear current image when starting a new stream
+        DispatchQueue.main.async { [weak self] in
+            self?.currentImage = nil
+            self?.fps = 0.0
+            self?.frameCount = 0
+            self?.lastFPSUpdate = Date()
+        }
+        
         delegate = StreamDelegate { [weak self] image in
             DispatchQueue.main.async {
                 guard let self = self else { return }
