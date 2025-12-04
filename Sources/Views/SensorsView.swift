@@ -8,10 +8,18 @@ struct SensorsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Environment sensors (from sensors controller)
                 if let controller = appState.sensorsController {
                     EnvironmentSection(controller: controller)
-                    CombinedCameraSection(controller: controller)
-                } else {
+                }
+                
+                // Cameras (from cameras or sensors controller)
+                if let cameraController = appState.camerasController ?? appState.sensorsController {
+                    CombinedCameraSection(controller: cameraController)
+                }
+                
+                // Show message if nothing is configured
+                if appState.sensorsController == nil && appState.camerasController == nil {
                     MissingSensorsControllerCard()
                 }
             }
@@ -80,6 +88,10 @@ private struct EnvironmentSection: View {
 private struct CombinedCameraSection: View {
     @ObservedObject var controller: ControllerState
     @EnvironmentObject var appState: AppState
+    @State private var gain: Double = 150
+    @State private var exposure: Double = 0.1  // seconds
+    @State private var capturedImage: NSImage?
+    @State private var showingPhotoViewer = false
     
     var body: some View {
         cameraCard(
@@ -87,13 +99,24 @@ private struct CombinedCameraSection: View {
             primaryCamera: controller.sensors.weatherCam,
             secondaryCamera: controller.sensors.meteorCam,
             controller: controller,
-            appState: appState
+            appState: appState,
+            gain: $gain,
+            exposure: $exposure,
+            capturedImage: $capturedImage,
+            showingPhotoViewer: $showingPhotoViewer
         )
+        .sheet(isPresented: $showingPhotoViewer) {
+            if let image = capturedImage {
+                PhotoViewerSheet(image: image)
+            }
+        }
     }
 }
 
 @ViewBuilder
-private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState) -> some View {
+private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, exposure: Binding<Double>, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) -> some View {
+    let isControllerConnected = appState.connectedControllers.contains(controller.id)
+    
     SensorsPanel(title: title, icon: "camera.fill") {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -105,21 +128,60 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
             if let lastSnap = primaryCamera.lastSnapshot ?? secondaryCamera.lastSnapshot {
                 Text("Last snapshot: \(lastSnap, style: .relative)").font(.caption).foregroundColor(.secondary)
             }
+            
+            // Camera Settings
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Camera Settings").font(.subheadline).foregroundColor(.secondary)
+                
+                HStack {
+                    Text("Gain:")
+                        .frame(width: 80, alignment: .leading)
+                    Slider(value: gain, in: 0...300, step: 1)
+                    Text("\(Int(gain.wrappedValue))")
+                        .frame(width: 40, alignment: .trailing)
+                        .monospacedDigit()
+                    Button("Set") {
+                        updateCameraSetting(controller: controller, gain: Int(gain.wrappedValue), appState: appState)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                
+                HStack {
+                    Text("Exposure:")
+                        .frame(width: 80, alignment: .leading)
+                    Slider(value: exposure, in: 0.001...10.0, step: 0.001)
+                    Text(String(format: "%.3f s", exposure.wrappedValue))
+                        .frame(width: 70, alignment: .trailing)
+                        .monospacedDigit()
+                    Button("Set") {
+                        updateCameraSetting(controller: controller, exposure: exposure.wrappedValue, appState: appState)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+            }
+            .disabled(!isControllerConnected)
+            .padding(.vertical, 4)
+            
             HStack {
                 Button("Start Stream") {
                     startStream(controller: controller, appState: appState)
                 }
-                .disabled(!primaryCamera.connected || primaryCamera.streaming)
+                .disabled(!isControllerConnected || !primaryCamera.connected || primaryCamera.streaming)
                 
                 Button("Stop Stream") {
                     stopStream(controller: controller, appState: appState)
                 }
-                .disabled(!primaryCamera.streaming)
+                .disabled(!isControllerConnected || !primaryCamera.streaming)
                 
-                Button("Snapshot") {
-                    captureSnapshot(controller: controller, appState: appState)
+                Button(action: {
+                    capturePhoto(controller: controller, appState: appState, capturedImage: capturedImage, showingPhotoViewer: showingPhotoViewer)
+                }) {
+                    Label("Capture Photo", systemImage: "camera")
                 }
-                .disabled(!primaryCamera.connected)
+                .disabled(!isControllerConnected || !primaryCamera.connected)
+                .buttonStyle(.borderedProminent)
             }
             if primaryCamera.streaming {
                 ZStack {
@@ -192,15 +254,56 @@ private func stopStream(controller: ControllerState, appState: AppState) {
     }
 }
 
-private func captureSnapshot(controller: ControllerState, appState: AppState) {
+private func capturePhoto(controller: ControllerState, appState: AppState, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) {
     Task {
         do {
             guard let apiClient = controller.apiClient else { return }
+            appState.addLog(level: .info, module: "camera", message: "Capturing photo...", controller: controller)
+            
             let imageData = try await apiClient.captureSnapshot()
-            appState.addLog(level: .info, module: "camera", message: "Captured snapshot (\(imageData.count) bytes)", controller: controller)
-            // TODO: Display or save the image
+            
+            if let image = NSImage(data: imageData) {
+                await MainActor.run {
+                    capturedImage.wrappedValue = image
+                    showingPhotoViewer.wrappedValue = true
+                }
+                appState.addLog(level: .info, module: "camera", message: "Photo captured: \(Int(image.size.width))×\(Int(image.size.height))", controller: controller)
+            } else {
+                appState.addLog(level: .error, module: "camera", message: "Failed to decode photo", controller: controller)
+            }
         } catch {
-            appState.addLog(level: .error, module: "camera", message: "Failed to capture snapshot: \(error.localizedDescription)", controller: controller)
+            appState.addLog(level: .error, module: "camera", message: "Failed to capture photo: \(error.localizedDescription)", controller: controller)
+        }
+    }
+}
+
+private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, exposure: Double? = nil, appState: AppState) {
+    Task {
+        do {
+            guard let apiClient = controller.apiClient else { 
+                appState.addLog(level: .error, module: "camera", message: "API client not available", controller: controller)
+                return
+            }
+            
+            var exposureMicroseconds: Int?
+            if let exp = exposure {
+                exposureMicroseconds = Int(exp * 1_000_000)
+                appState.addLog(level: .info, module: "camera", message: "Sending exposure: \(exposureMicroseconds!) μs (%.3f s)".replacingOccurrences(of: "%.3f", with: String(format: "%.3f", exp)), controller: controller)
+            }
+            if let g = gain {
+                appState.addLog(level: .info, module: "camera", message: "Sending gain: \(g)", controller: controller)
+            }
+            
+            try await apiClient.updateCameraSettings(gain: gain, exposure: exposureMicroseconds)
+            
+            if let g = gain {
+                appState.addLog(level: .info, module: "camera", message: "✓ Gain set to \(g)", controller: controller)
+            }
+            if let exp = exposure {
+                appState.addLog(level: .info, module: "camera", message: String(format: "✓ Exposure set to %.3f s", exp), controller: controller)
+            }
+        } catch {
+            appState.addLog(level: .error, module: "camera", message: "Failed to update settings: \(error.localizedDescription)", controller: controller)
         }
     }
 }
@@ -239,6 +342,47 @@ private struct SensorsPanel<Content: View>: View {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
+    }
+}
+
+// Simple photo viewer sheet
+private struct PhotoViewerSheet: View {
+    let image: NSImage
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Captured Photo")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Spacer()
+                Button("Close") {
+                    dismiss()
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding()
+            
+            Divider()
+            
+            Image(nsImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black)
+            
+            Divider()
+            
+            HStack {
+                Text("Size: \(Int(image.size.width)) × \(Int(image.size.height))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            .padding()
+        }
+        .frame(width: 800, height: 700)
     }
 }
 

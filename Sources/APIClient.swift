@@ -81,6 +81,49 @@ class APIClient {
         try await postEmpty("/camera/stream/stop")
     }
     
+    func updateCameraSettings(gain: Int? = nil, exposure: Int? = nil) async throws {
+        var params: [String: Any] = [:]
+        if let gain = gain {
+            params["gain"] = gain
+        }
+        if let exposure = exposure {
+            params["exposure"] = exposure
+        }
+        
+        var urlString = baseURL.trimmingCharacters(in: .whitespaces)
+        if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {
+            urlString = "http://" + urlString
+        }
+        if urlString.hasSuffix("/") {
+            urlString = String(urlString.dropLast())
+        }
+        urlString += "/camera/settings"
+        
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 10
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = authToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        request.httpBody = try JSONSerialization.data(withJSONObject: params)
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+        
+        guard httpResponse.statusCode == 200 else {
+            throw APIError.httpError(httpResponse.statusCode)
+        }
+    }
+    
     func captureSnapshot() async throws -> Data {
         var urlString = baseURL.trimmingCharacters(in: .whitespaces)
         if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {

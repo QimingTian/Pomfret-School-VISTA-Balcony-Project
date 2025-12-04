@@ -13,10 +13,11 @@ struct ObservatoryApp: App {
 					.environmentObject(appState)
 					.background(WindowAccessor())
 					.onAppear {
-						// Delay initialization to avoid crash
+						// Start auto-refresh timer (but only fetches connected controllers)
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
 							appState.startAutoRefresh()
-							appState.fetchStatus()
+							// Don't auto-fetch on startup - let user manually connect
+							// appState.fetchStatus()
 							appState.fetchWeather()
 						}
 					}

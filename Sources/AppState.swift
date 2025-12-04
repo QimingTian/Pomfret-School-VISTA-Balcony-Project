@@ -36,7 +36,9 @@ final class AppState: ObservableObject {
     func startAutoRefresh() {
         refreshTimer?.invalidate()
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            self?.fetchStatus()
+            // Only fetch if there are connected controllers
+            guard let self = self, !self.connectedControllers.isEmpty else { return }
+            self.fetchStatus()
         }
     }
     
@@ -159,7 +161,9 @@ final class AppState: ObservableObject {
     
     nonisolated func fetchStatus() {
         Task { @MainActor in
-            controllers.forEach { $0.fetchStatus() }
+            // Only fetch status for connected controllers
+            controllers.filter { connectedControllers.contains($0.id) }
+                       .forEach { $0.fetchStatus() }
         }
     }
     
