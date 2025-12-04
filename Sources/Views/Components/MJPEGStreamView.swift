@@ -101,14 +101,42 @@ class StreamDelegate: NSObject, URLSessionDataDelegate {
         super.init()
     }
     
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("🔐 Received authentication challenge: \(challenge.protectionSpace.authenticationMethod)")
+        
+        // Accept self-signed certificates (only for development/testing)
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                let credential = URLCredential(trust: serverTrust)
+                completionHandler(.useCredential, credential)
+                return
+            }
+        }
+        
+        completionHandler(.performDefaultHandling, nil)
+    }
+    
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        print("📡 Stream response received: \(response)")
+        if let httpResponse = response as? HTTPURLResponse {
+            print("📡 Status code: \(httpResponse.statusCode)")
+            print("📡 Headers: \(httpResponse.allHeaderFields)")
+        }
+        completionHandler(.allow)
+    }
+    
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        print("📡 Received \(data.count) bytes")
         buffer.append(data)
         processFrames()
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         if let error = error {
-            print("Stream error: \(error.localizedDescription)")
+            print("❌ Stream error: \(error.localizedDescription)")
+            print("❌ Error details: \(error)")
+        } else {
+            print("✅ Stream completed successfully")
         }
     }
     

@@ -88,8 +88,9 @@ private struct EnvironmentSection: View {
 private struct CombinedCameraSection: View {
     @ObservedObject var controller: ControllerState
     @EnvironmentObject var appState: AppState
-    @State private var gain: Double = 150
-    @State private var exposure: Double = 0.1  // seconds
+    @AppStorage("camera.gain") private var gain: Double = 150
+    @AppStorage("camera.streamExposure") private var exposure: Double = 0.1  // seconds - for stream
+    @AppStorage("camera.photoExposure") private var photoExposure: Double = 1.0  // seconds - for photo capture
     @State private var capturedImage: NSImage?
     @State private var showingPhotoViewer = false
     
@@ -102,6 +103,7 @@ private struct CombinedCameraSection: View {
             appState: appState,
             gain: $gain,
             exposure: $exposure,
+            photoExposure: $photoExposure,
             capturedImage: $capturedImage,
             showingPhotoViewer: $showingPhotoViewer
         )
@@ -114,7 +116,7 @@ private struct CombinedCameraSection: View {
 }
 
 @ViewBuilder
-private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, exposure: Binding<Double>, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) -> some View {
+private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, exposure: Binding<Double>, photoExposure: Binding<Double>, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) -> some View {
     let isControllerConnected = appState.connectedControllers.contains(controller.id)
     
     SensorsPanel(title: title, icon: "camera.fill") {
@@ -148,14 +150,28 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 }
                 
                 HStack {
-                    Text("Exposure:")
+                    Text("Stream Exp:")
                         .frame(width: 80, alignment: .leading)
-                    Slider(value: exposure, in: 0.001...10.0, step: 0.001)
+                    Slider(value: exposure, in: 0.001...1.0, step: 0.001)
                     Text(String(format: "%.3f s", exposure.wrappedValue))
                         .frame(width: 70, alignment: .trailing)
                         .monospacedDigit()
                     Button("Set") {
-                        updateCameraSetting(controller: controller, exposure: exposure.wrappedValue, appState: appState)
+                        updateCameraSetting(controller: controller, streamExposure: exposure.wrappedValue, appState: appState)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                
+                HStack {
+                    Text("Photo Exp:")
+                        .frame(width: 80, alignment: .leading)
+                    Slider(value: photoExposure, in: 0.001...10.0, step: 0.001)
+                    Text(String(format: "%.3f s", photoExposure.wrappedValue))
+                        .frame(width: 70, alignment: .trailing)
+                        .monospacedDigit()
+                    Button("Set") {
+                        updateCameraSetting(controller: controller, photoExposure: photoExposure.wrappedValue, appState: appState)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
@@ -277,7 +293,7 @@ private func capturePhoto(controller: ControllerState, appState: AppState, captu
     }
 }
 
-private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, exposure: Double? = nil, appState: AppState) {
+private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, streamExposure: Double? = nil, photoExposure: Double? = nil, appState: AppState) {
     Task {
         do {
             guard let apiClient = controller.apiClient else { 
@@ -285,22 +301,33 @@ private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, 
                 return
             }
             
-            var exposureMicroseconds: Int?
-            if let exp = exposure {
-                exposureMicroseconds = Int(exp * 1_000_000)
-                appState.addLog(level: .info, module: "camera", message: "Sending exposure: \(exposureMicroseconds!) μs (%.3f s)".replacingOccurrences(of: "%.3f", with: String(format: "%.3f", exp)), controller: controller)
+            var streamExpMicroseconds: Int?
+            var photoExpMicroseconds: Int?
+            
+            if let exp = streamExposure {
+                streamExpMicroseconds = Int(exp * 1_000_000)
+                appState.addLog(level: .info, module: "camera", message: String(format: "Sending stream exposure: %.3f s", exp), controller: controller)
             }
+            
+            if let exp = photoExposure {
+                photoExpMicroseconds = Int(exp * 1_000_000)
+                appState.addLog(level: .info, module: "camera", message: String(format: "Sending photo exposure: %.3f s", exp), controller: controller)
+            }
+            
             if let g = gain {
                 appState.addLog(level: .info, module: "camera", message: "Sending gain: \(g)", controller: controller)
             }
             
-            try await apiClient.updateCameraSettings(gain: gain, exposure: exposureMicroseconds)
+            try await apiClient.updateCameraSettings(gain: gain, streamExposure: streamExpMicroseconds, photoExposure: photoExpMicroseconds)
             
             if let g = gain {
                 appState.addLog(level: .info, module: "camera", message: "✓ Gain set to \(g)", controller: controller)
             }
-            if let exp = exposure {
-                appState.addLog(level: .info, module: "camera", message: String(format: "✓ Exposure set to %.3f s", exp), controller: controller)
+            if let exp = streamExposure {
+                appState.addLog(level: .info, module: "camera", message: String(format: "✓ Stream exposure set to %.3f s", exp), controller: controller)
+            }
+            if let exp = photoExposure {
+                appState.addLog(level: .info, module: "camera", message: String(format: "✓ Photo exposure set to %.3f s", exp), controller: controller)
             }
         } catch {
             appState.addLog(level: .error, module: "camera", message: "Failed to update settings: \(error.localizedDescription)", controller: controller)

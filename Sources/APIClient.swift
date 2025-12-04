@@ -1,13 +1,20 @@
 import Foundation
 import Combine
 
-class APIClient {
+class APIClient: NSObject {
     var baseURL: String
     var authToken: String?
+    private lazy var urlSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 60
+        config.timeoutIntervalForResource = 300
+        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
+    }()
     
     init(baseURL: String, authToken: String? = nil) {
         self.baseURL = baseURL
         self.authToken = authToken
+        super.init()
     }
     
     // MARK: - Status
@@ -22,7 +29,10 @@ class APIClient {
         }
         urlString += "/status"
         
+        print("🌐 [APIClient] Fetching status from: \(urlString)")
+        
         guard let url = URL(string: urlString) else {
+            print("❌ [APIClient] Invalid URL: \(urlString)")
             throw APIError.invalidURL
         }
         
@@ -30,12 +40,36 @@ class APIClient {
         request.httpMethod = "GET"
         request.timeoutInterval = 30  // Increased for cross-subnet connections
         request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Pomfret Observatory/1.1 (macOS)", forHTTPHeaderField: "User-Agent")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        print("🌐 [APIClient] Sending request to: \(url)")
+        print("🌐 [APIClient] Using URLSession: \(urlSession)")
         
+        do {
+            let (data, response) = try await urlSession.data(for: request)
+            print("✅ [APIClient] Received response: \(response)")
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("✅ [APIClient] Status code: \(httpResponse.statusCode)")
+            }
+            
+            return try processStatusResponse(data: data, response: response)
+        } catch {
+            print("❌ [APIClient] Request failed with error: \(error)")
+            print("❌ [APIClient] Error type: \(type(of: error))")
+            print("❌ [APIClient] Error details: \(error.localizedDescription)")
+            if let urlError = error as? URLError {
+                print("❌ [APIClient] URLError code: \(urlError.code.rawValue)")
+                print("❌ [APIClient] URLError description: \(urlError.localizedDescription)")
+            }
+            throw error
+        }
+    }
+    
+    private func processStatusResponse(data: Data, response: URLResponse) throws -> StatusResponse {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
@@ -81,13 +115,16 @@ class APIClient {
         try await postEmpty("/camera/stream/stop")
     }
     
-    func updateCameraSettings(gain: Int? = nil, exposure: Int? = nil) async throws {
+    func updateCameraSettings(gain: Int? = nil, streamExposure: Int? = nil, photoExposure: Int? = nil) async throws {
         var params: [String: Any] = [:]
         if let gain = gain {
             params["gain"] = gain
         }
-        if let exposure = exposure {
-            params["exposure"] = exposure
+        if let streamExp = streamExposure {
+            params["stream_exposure"] = streamExp
+        }
+        if let photoExp = photoExposure {
+            params["photo_exposure"] = photoExp
         }
         
         var urlString = baseURL.trimmingCharacters(in: .whitespaces)
@@ -107,13 +144,15 @@ class APIClient {
         request.httpMethod = "POST"
         request.timeoutInterval = 10
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Pomfret Observatory/1.1 (macOS)", forHTTPHeaderField: "User-Agent")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
         request.httpBody = try JSONSerialization.data(withJSONObject: params)
         
-        let (_, response) = try await URLSession.shared.data(for: request)
+        print("🌐 [APIClient] Sending camera settings update")
+        let (_, response) = try await urlSession.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
@@ -141,11 +180,12 @@ class APIClient {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 30
+        request.setValue("Pomfret Observatory/1.1 (macOS)", forHTTPHeaderField: "User-Agent")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
@@ -186,11 +226,12 @@ class APIClient {
         request.httpMethod = "POST"
         request.timeoutInterval = 30  // Increased for cross-subnet connections
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Pomfret Observatory/1.1 (macOS)", forHTTPHeaderField: "User-Agent")
         if let token = authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
@@ -286,4 +327,35 @@ enum APIError: LocalizedError {
     }
 }
 
+// MARK: - URLSessionDelegate
 
+extension APIClient: URLSessionDelegate {
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        print("🔐 [APIClient] Received authentication challenge")
+        print("🔐 [APIClient] Authentication method: \(challenge.protectionSpace.authenticationMethod)")
+        print("🔐 [APIClient] Host: \(challenge.protectionSpace.host)")
+        
+        // Accept all SSL certificates (including self-signed and Cloudflare certificates)
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust {
+            print("🔐 [APIClient] Server trust authentication")
+            if let serverTrust = challenge.protectionSpace.serverTrust {
+                let credential = URLCredential(trust: serverTrust)
+                print("✅ [APIClient] Accepting server trust certificate")
+                completionHandler(.useCredential, credential)
+                return
+            }
+        }
+        
+        print("⚠️ [APIClient] Using default handling for authentication challenge")
+        completionHandler(.performDefaultHandling, nil)
+    }
+    
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        if let error = error {
+            print("❌ [APIClient] URLSession task completed with error: \(error)")
+            print("❌ [APIClient] Error details: \(error.localizedDescription)")
+        } else {
+            print("✅ [APIClient] URLSession task completed successfully")
+        }
+    }
+}
