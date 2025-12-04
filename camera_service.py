@@ -208,7 +208,12 @@ class ASICamera:
         if not self.is_open:
             return False
         
-        print(f"[start_stream] Starting video capture (auto exposure)")
+        # Set a reasonable exposure for video mode (100ms = 10 FPS max)
+        video_exposure = 100000  # 100ms
+        result_exp = asi_lib.ASISetControlValue(self.camera_id, ASI_EXPOSURE, video_exposure, ASI_FALSE)
+        print(f"[start_stream] Set video exposure to {video_exposure} μs (0.1 s) (result: {result_exp})")
+        
+        print(f"[start_stream] Starting video capture")
         
         result = asi_lib.ASIStartVideoCapture(self.camera_id)
         if result != ASI_SUCCESS:
@@ -241,6 +246,7 @@ class ASICamera:
         height = camera_state['height']
         buffer_size = width * height * 3  # RGB24
         buffer = (ctypes.c_ubyte * buffer_size)()
+        consecutive_errors = 0
         
         while self.streaming and self.is_open:
             drop_frames = ctypes.c_int(0)
@@ -248,21 +254,25 @@ class ASICamera:
                 self.camera_id,
                 ctypes.byref(buffer),
                 buffer_size,
-                1000,  # timeout in ms
+                2000,  # timeout in ms (increased from 1000)
                 ctypes.byref(drop_frames)
             )
             
             if result == ASI_SUCCESS:
+                consecutive_errors = 0  # Reset error counter
                 # Convert to numpy array
                 img_array = np.frombuffer(buffer, dtype=np.uint8)
                 img_array = img_array.reshape((height, width, 3))
                 
                 # Convert to PIL Image
-                img = Image.fromarray(img_array, 'RGB')
+                img = Image.fromarray(img_array, mode='RGB')
                 self.frame_buffer = img
                 camera_state['current_frame'] = img
             elif result != 2:  # 2 = timeout, which is normal
-                print(f"Error getting video data: {result}")
+                consecutive_errors += 1
+                # Only print error if it persists
+                if consecutive_errors == 1 or consecutive_errors % 10 == 0:
+                    print(f"Error getting video data: {result} (consecutive: {consecutive_errors})")
             
             time.sleep(0.01)  # Small delay to prevent CPU overload
     

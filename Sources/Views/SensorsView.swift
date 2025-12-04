@@ -91,6 +91,8 @@ private struct CombinedCameraSection: View {
     @AppStorage("camera.gain") private var gain: Double = 50
     @AppStorage("camera.photoExposure") private var photoExposure: Double = 1.0  // seconds - for photo capture
     @State private var capturedImage: NSImage?
+    @State private var capturedGain: Int = 50
+    @State private var capturedExposure: Double = 1.0
     @State private var showingPhotoViewer = false
     
     var body: some View {
@@ -103,18 +105,20 @@ private struct CombinedCameraSection: View {
             gain: $gain,
             photoExposure: $photoExposure,
             capturedImage: $capturedImage,
+            capturedGain: $capturedGain,
+            capturedExposure: $capturedExposure,
             showingPhotoViewer: $showingPhotoViewer
         )
         .sheet(isPresented: $showingPhotoViewer) {
             if let image = capturedImage {
-                PhotoViewerSheet(image: image)
+                PhotoViewerSheet(image: image, gain: capturedGain, exposure: capturedExposure)
             }
         }
     }
 }
 
 @ViewBuilder
-private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, photoExposure: Binding<Double>, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) -> some View {
+private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, photoExposure: Binding<Double>, capturedImage: Binding<NSImage?>, capturedGain: Binding<Int>, capturedExposure: Binding<Double>, showingPhotoViewer: Binding<Bool>) -> some View {
     let isControllerConnected = appState.connectedControllers.contains(controller.id)
     
     SensorsPanel(title: title, icon: "camera.fill") {
@@ -176,7 +180,7 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 .disabled(!isControllerConnected || !primaryCamera.streaming)
                 
                 Button(action: {
-                    capturePhoto(controller: controller, appState: appState, capturedImage: capturedImage, showingPhotoViewer: showingPhotoViewer)
+                    capturePhoto(controller: controller, appState: appState, gain: gain, photoExposure: photoExposure, capturedImage: capturedImage, capturedGain: capturedGain, capturedExposure: capturedExposure, showingPhotoViewer: showingPhotoViewer)
                 }) {
                     Label("Capture Photo", systemImage: "camera")
                 }
@@ -255,7 +259,7 @@ private func stopStream(controller: ControllerState, appState: AppState) {
     }
 }
 
-private func capturePhoto(controller: ControllerState, appState: AppState, capturedImage: Binding<NSImage?>, showingPhotoViewer: Binding<Bool>) {
+private func capturePhoto(controller: ControllerState, appState: AppState, gain: Binding<Double>, photoExposure: Binding<Double>, capturedImage: Binding<NSImage?>, capturedGain: Binding<Int>, capturedExposure: Binding<Double>, showingPhotoViewer: Binding<Bool>) {
     Task {
         do {
             guard let apiClient = controller.apiClient else { return }
@@ -266,6 +270,8 @@ private func capturePhoto(controller: ControllerState, appState: AppState, captu
             if let image = NSImage(data: imageData) {
                 await MainActor.run {
                     capturedImage.wrappedValue = image
+                    capturedGain.wrappedValue = Int(gain.wrappedValue)
+                    capturedExposure.wrappedValue = photoExposure.wrappedValue
                     showingPhotoViewer.wrappedValue = true
                 }
                 appState.addLog(level: .info, module: "camera", message: "Photo captured: \(Int(image.size.width))×\(Int(image.size.height))", controller: controller)
@@ -291,6 +297,7 @@ private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, 
             }
             
             var photoExpMicroseconds: Int?
+            let wasStreaming = controller.sensors.weatherCam.streaming || controller.sensors.meteorCam.streaming
             
             if let exp = photoExposure {
                 photoExpMicroseconds = Int(exp * 1_000_000)
@@ -305,6 +312,13 @@ private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, 
             
             if let g = gain {
                 appState.addLog(level: .info, module: "camera", message: "✓ Gain set to \(g)", controller: controller)
+                
+                // If was streaming, wait for stream to restart and refresh UI
+                if wasStreaming {
+                    try await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+                    controller.fetchStatus()
+                    appState.addLog(level: .info, module: "camera", message: "Stream refreshed with new gain", controller: controller)
+                }
             }
             if let exp = photoExposure {
                 appState.addLog(level: .info, module: "camera", message: String(format: "✓ Exposure set to %.3f s", exp), controller: controller)
@@ -355,6 +369,8 @@ private struct SensorsPanel<Content: View>: View {
 // Simple photo viewer sheet
 private struct PhotoViewerSheet: View {
     let image: NSImage
+    let gain: Int
+    let exposure: Double
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -382,9 +398,21 @@ private struct PhotoViewerSheet: View {
             Divider()
             
             HStack {
-                Text("Size: \(Int(image.size.width)) × \(Int(image.size.height))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Size: \(Int(image.size.width)) × \(Int(image.size.height))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 12) {
+                        Text("Gain: \(gain)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("•")
+                            .foregroundColor(.secondary)
+                        Text(String(format: "Exposure: %.3f s", exposure))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 Spacer()
             }
             .padding()
