@@ -193,7 +193,7 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 ZStack {
                     MJPEGStreamView(url: "\(controller.baseURL)/camera/stream")
                         .frame(height: 500)
-                        .id(streamRefreshID)  // Force refresh when ID changes
+                        .id(streamRefreshID.wrappedValue)  // Force refresh when ID changes
                     
                     // LIVE 指示器
                     VStack {
