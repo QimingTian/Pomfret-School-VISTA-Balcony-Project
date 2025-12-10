@@ -149,6 +149,7 @@ sequence_state = {
     'total_count': 0,
     'current_count': 0,
     'file_format': 'JPEG',  # JPEG, PNG, or TIFF
+    'interval': 0,  # Interval between photos in seconds (0 = fast mode, >0 = time-lapse mode)
     'thread': None
 }
 
@@ -680,9 +681,17 @@ def sequence_capture_loop():
             else:
                 print(f"[Sequence] Failed to capture photo {sequence_state['current_count'] + 1}/{sequence_state['total_count']}")
             
-            # Wait between photos (at least exposure time + some buffer)
-            exposure_ms = camera_state['exposure'] / 1000.0
-            wait_time = max(exposure_ms / 1000.0 + 0.5, 1.0)  # At least 1 second between photos
+            # Wait between photos
+            interval = sequence_state.get('interval', 0)  # Get interval (0 = fast mode)
+            if interval > 0:
+                # Time-lapse mode: use fixed interval
+                wait_time = interval
+                print(f"[Sequence] Waiting {wait_time} seconds until next photo (time-lapse mode)")
+            else:
+                # Fast mode: at least exposure time + some buffer
+                exposure_ms = camera_state['exposure'] / 1000.0
+                wait_time = max(exposure_ms / 1000.0 + 0.5, 1.0)  # At least 1 second between photos
+                print(f"[Sequence] Waiting {wait_time:.2f} seconds until next photo (fast mode)")
             time.sleep(wait_time)
             
         except Exception as e:
@@ -1035,6 +1044,11 @@ def start_sequence():
         return jsonify({'error': f'Invalid count value: {data.get("count")}'}), 400
     
     file_format = data.get('file_format', 'JPEG')
+    interval = float(data.get('interval', 0))  # Interval in seconds (0 = fast mode)
+    
+    # Validate interval
+    if interval < 0:
+        return jsonify({'error': 'Interval must be >= 0'}), 400
     
     # Validate save path exists and is a directory
     # Expand user path (~) if present
@@ -1071,19 +1085,22 @@ def start_sequence():
     sequence_state['total_count'] = count
     sequence_state['current_count'] = 0
     sequence_state['file_format'] = file_format
+    sequence_state['interval'] = interval
     
     # Start sequence capture thread
     sequence_state['thread'] = threading.Thread(target=sequence_capture_loop, daemon=True)
     sequence_state['thread'].start()
     
-    print(f"[Sequence] Started: {count} photos to {save_path}, format: {file_format}")
+    mode_str = f"time-lapse (interval: {interval}s)" if interval > 0 else "fast mode"
+    print(f"[Sequence] Started: {count} photos to {save_path}, format: {file_format}, {mode_str}")
     
     return jsonify({
         'success': True,
-        'message': f'Sequence capture started: {count} photos',
+        'message': f'Sequence capture started: {count} photos ({mode_str})',
         'save_path': save_path,
         'count': count,
-        'file_format': file_format
+        'file_format': file_format,
+        'interval': interval
     })
 
 @app.route('/camera/sequence/stop', methods=['POST'])
@@ -1115,7 +1132,8 @@ def sequence_status():
         'current_count': sequence_state['current_count'],
         'total_count': sequence_state['total_count'],
         'save_path': sequence_state['save_path'],
-        'file_format': sequence_state['file_format']
+        'file_format': sequence_state['file_format'],
+        'interval': sequence_state.get('interval', 0)
     })
 
 @app.route('/camera/sequence/capture', methods=['POST'])

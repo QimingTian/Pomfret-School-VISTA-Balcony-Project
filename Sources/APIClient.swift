@@ -177,6 +177,7 @@ class APIClient: NSObject {
         let totalCount: Int
         let savePath: String?
         let fileFormat: String?
+        let interval: Double?
         
         enum CodingKeys: String, CodingKey {
             case active
@@ -184,6 +185,7 @@ class APIClient: NSObject {
             case totalCount = "total_count"
             case savePath = "save_path"
             case fileFormat = "file_format"
+            case interval
         }
     }
     
@@ -193,16 +195,18 @@ class APIClient: NSObject {
         let savePath: String
         let count: Int
         let fileFormat: String
+        let interval: Double?
         
         enum CodingKeys: String, CodingKey {
             case success, message
             case savePath = "save_path"
             case count
             case fileFormat = "file_format"
+            case interval
         }
     }
     
-    func startSequence(savePath: String, count: Int, fileFormat: String) async throws -> SequenceStartResponse {
+    func startSequence(savePath: String, count: Int, fileFormat: String, interval: Double = 0) async throws -> SequenceStartResponse {
         var urlString = baseURL.trimmingCharacters(in: .whitespaces)
         if !urlString.hasPrefix("http://") && !urlString.hasPrefix("https://") {
             urlString = "http://" + urlString
@@ -225,11 +229,14 @@ class APIClient: NSObject {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         
-        let params: [String: Any] = [
+        var params: [String: Any] = [
             "save_path": savePath,
             "count": count,
             "file_format": fileFormat
         ]
+        if interval > 0 {
+            params["interval"] = interval
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: params)
         
         let (data, response) = try await urlSession.data(for: request)
