@@ -8,10 +8,10 @@ macOS application for controlling the Pomfret School VISTA Observatory, includin
 **Release Date:** December 2025
 
 **Major Changes:**
-- 🎯 **Raspberry Pi Support** - Full migration from Mac Mini to Raspberry Pi
-- 🐧 **Linux/ARM Architecture** - Automatic detection and support for ARMv6, ARMv7, and ARMv8 (64-bit)
-- 📦 **Cross-Platform SDK** - Unified SDK loading for both macOS and Linux
-- 🔧 **Improved Setup** - Simplified installation process for Raspberry Pi OS
+- **Raspberry Pi Support** - Full migration from Mac Mini to Raspberry Pi
+- **Linux/ARM Architecture** - Automatic detection and support for ARMv6, ARMv7, and ARMv8 (64-bit)
+- **Cross-Platform SDK** - Unified SDK loading for both macOS and Linux
+- **Improved Setup** - Simplified installation process for Raspberry Pi OS
 
 **Technical Improvements:**
 - Automatic architecture detection in camera service
@@ -58,11 +58,11 @@ macOS application for controlling the Pomfret School VISTA Observatory, includin
 **Release Date:** December 4, 2025
 
 **Major Features:**
-- ✅ **Remote Access via Cloudflare Tunnel** - Access observatory from anywhere with permanent URL `https://pomfret-obs.pomfretastro.org`
-- ✅ **Dual Exposure Controls** - Separate settings for video streaming (0.001-1s) and photo capture (0.001-10s)
-- ✅ **Settings Persistence** - Camera settings saved across app restarts
-- ✅ **HTTPS Support** - Full SSL/TLS certificate handling
-- ✅ **Improved Gain Control** - Automatic stream restart when adjusting gain
+- **Remote Access via Cloudflare Tunnel** - Access observatory from anywhere with permanent URL `https://pomfret-obs.pomfretastro.org`
+- **Dual Exposure Controls** - Separate settings for video streaming (0.001-1s) and photo capture (0.001-10s)
+- **Settings Persistence** - Camera settings saved across app restarts
+- **HTTPS Support** - Full SSL/TLS certificate handling
+- **Improved Gain Control** - Automatic stream restart when adjusting gain
 
 **Technical Improvements:**
 - Info.plist configuration for App Transport Security
