@@ -349,6 +349,10 @@ class ASICamera:
         # Enable auto exposure for video mode, but limit max exposure time
         # This allows the camera to adjust exposure automatically while respecting the max limit
         video_exposure = camera_state['video_exposure']  # microseconds
+        gain = camera_state['gain']
+        
+        # Set gain first (must be set before starting video capture)
+        result_gain = asi_lib.ASISetControlValue(self.camera_id, ASI_GAIN, gain, ASI_FALSE)
         
         # Set ASI_AUTO_MAX_EXP to limit the maximum exposure time in video mode
         # This controls the frame rate: shorter max exposure = higher frame rate
@@ -357,6 +361,12 @@ class ASICamera:
         # Enable auto exposure for video mode
         result_auto = asi_lib.ASISetControlValue(self.camera_id, ASI_EXPOSURE, 0, ASI_TRUE)
         
+        # Verify gain was set
+        actual_gain = ctypes.c_long(0)
+        auto_gain = ctypes.c_int(0)
+        asi_lib.ASIGetControlValue(self.camera_id, ASI_GAIN, ctypes.byref(actual_gain), ctypes.byref(auto_gain))
+        
+        print(f"[start_stream] Set gain to {gain} (result: {result_gain}, actual: {actual_gain.value})")
         print(f"[start_stream] Set video max exposure to {video_exposure} μs ({video_exposure/1000:.1f} ms)")
         print(f"[start_stream] ASI_AUTO_MAX_EXP result: {result_max_exp}, Auto exposure result: {result_auto}")
         
