@@ -4,6 +4,28 @@ macOS application for controlling the Pomfret School VISTA Observatory, includin
 
 ## Version History
 
+### Version 2.1
+**Release Date:** December 2025
+
+**Major Changes:**
+- 🎯 **Raspberry Pi Support** - Full migration from Mac Mini to Raspberry Pi
+- 🐧 **Linux/ARM Architecture** - Automatic detection and support for ARMv6, ARMv7, and ARMv8 (64-bit)
+- 📦 **Cross-Platform SDK** - Unified SDK loading for both macOS and Linux
+- 🔧 **Improved Setup** - Simplified installation process for Raspberry Pi OS
+
+**Technical Improvements:**
+- Automatic architecture detection in camera service
+- Support for Raspberry Pi OS (Debian-based Linux)
+- Updated installation instructions for apt package manager
+- Enhanced error messages for Linux-specific issues
+- USB memory limit configuration for optimal camera performance
+
+**Migration Notes:**
+- Server platform changed from macOS to Raspberry Pi OS
+- Installation uses `apt` instead of Homebrew
+- Requires udev rules for non-root camera access
+- USB memory limit must be set to 200MB
+
 ### Version 2.0
 **Release Date:** December 6, 2025
 

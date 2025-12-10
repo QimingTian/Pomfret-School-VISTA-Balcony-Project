@@ -13,8 +13,6 @@ struct LogsView: View {
             HStack {
                 Picker("Module", selection: $selectedModule) {
                     Text("All").tag("all")
-                    Text("roof").tag("roof")
-                    Text("mount").tag("mount")
                     Text("camera").tag("camera")
                     Text("weather").tag("weather")
                 }

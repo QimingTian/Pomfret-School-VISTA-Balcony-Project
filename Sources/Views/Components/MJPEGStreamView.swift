@@ -1,6 +1,6 @@
 //
 //  MJPEGStreamView.swift
-//  Pomfret VISTA Observatory
+//  Pomfret Astro
 //
 //  Simple and reliable MJPEG stream viewer
 //

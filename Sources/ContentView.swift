@@ -6,11 +6,8 @@ struct ContentView: View {
 	var body: some View {
 		NavigationSplitView {
 			List(selection: $appState.selection) {
-				NavigationLink(value: AppSection.roof) {
-					Label("Roof", systemImage: "house")
-				}
 				NavigationLink(value: AppSection.sensors) {
-					Label("Sensors", systemImage: "sensor.tag.radiowaves.forward")
+					Label("Camera", systemImage: "camera")
 				}
 				NavigationLink(value: AppSection.weather) {
 					Label("Weather", systemImage: "cloud.sun")
@@ -25,7 +22,6 @@ struct ContentView: View {
 			.listStyle(.sidebar)
 		} detail: {
 			switch appState.selection {
-			case .roof: RoofView()
 			case .sensors: SensorsView()
 			case .weather: WeatherView()
 			case .logs: LogsView()
@@ -36,6 +32,6 @@ struct ContentView: View {
 }
 
 enum AppSection: Hashable {
-	case roof, sensors, weather, logs, settings
+	case sensors, weather, logs, settings
 }
 

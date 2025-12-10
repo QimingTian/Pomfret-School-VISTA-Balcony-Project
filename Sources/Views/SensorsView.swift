@@ -2,85 +2,23 @@ import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
 
+private let cameraImageFormats: [String] = ["RGB24", "RAW8", "RAW16", "Y8"]
+
 struct SensorsView: View {
     @EnvironmentObject var appState: AppState
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Environment sensors (from sensors controller)
-                if let controller = appState.sensorsController {
-                    EnvironmentSection(controller: controller)
-                }
-                
-                // Cameras (from cameras or sensors controller)
-                if let cameraController = appState.camerasController ?? appState.sensorsController {
-                    CombinedCameraSection(controller: cameraController)
-                }
-                
-                // Show message if nothing is configured
-                if appState.sensorsController == nil && appState.camerasController == nil {
+                // Cameras (from cameras controller)
+                if let controller = appState.camerasController {
+                    CombinedCameraSection(controller: controller)
+                } else {
+                    // Show message if nothing is configured
                     MissingSensorsControllerCard()
                 }
             }
             .padding()
-        }
-    }
-}
-
-private struct EnvironmentSection: View {
-    @ObservedObject var controller: ControllerState
-    
-    var hasEnvironmentSensors: Bool {
-        controller.sensors.temperature != nil || controller.sensors.humidity != nil
-    }
-    
-    var body: some View {
-        SensorsPanel(title: "Environment Sensors", icon: "thermometer") {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    StatusBadge(
-                        text: hasEnvironmentSensors ? "Connected" : "Not Connected",
-                        status: hasEnvironmentSensors ? .ok : .error
-                    )
-                }
-                
-                if hasEnvironmentSensors {
-                    HStack(spacing: 24) {
-                        if let temp = controller.sensors.temperature {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Temperature").font(.caption).foregroundColor(.secondary)
-                                Text("\(temp, specifier: "%.1f")°C").font(.title2).foregroundColor(.blue)
-                            }
-                        }
-                        if let hum = controller.sensors.humidity {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Humidity").font(.caption).foregroundColor(.secondary)
-                                Text("\(hum, specifier: "%.0f")%").font(.title2).foregroundColor(.blue)
-                            }
-                        }
-                    }
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 200)
-                        .cornerRadius(8)
-                        .overlay {
-                            VStack(spacing: 8) {
-                                if let temp = controller.sensors.temperature {
-                                    Text("\(temp, specifier: "%.1f")°C").font(.largeTitle).foregroundColor(.blue)
-                                }
-                                if let hum = controller.sensors.humidity {
-                                    Text("\(hum, specifier: "%.0f")% Humidity").font(.title3).foregroundColor(.secondary)
-                                }
-                            }
-                        }
-                } else {
-                    Text("No environment sensors connected")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 8)
-                }
-            }
         }
     }
 }
@@ -91,11 +29,41 @@ private struct CombinedCameraSection: View {
     @AppStorage("camera.gain") private var gain: Double = 50
     @AppStorage("camera.photoExposure") private var photoExposure: Double = 1.0  // seconds - for photo capture
     @AppStorage("camera.videoExposure") private var videoExposure: Double = 0.1  // seconds - max exposure for video streaming (controls frame rate)
+    @AppStorage("camera.imageFormat") private var imageFormat: String = "RGB24"  // Camera capture format
     @State private var capturedImage: NSImage?
     @State private var capturedGain: Int = 50
     @State private var capturedExposure: Double = 1.0
     @State private var showingPhotoViewer = false
     @State private var streamRefreshID = UUID()  // Force stream refresh
+    
+    // Sequence capture state
+    @AppStorage("sequence.savePath") private var sequenceSavePath: String = ""
+    @AppStorage("sequence.bookmark") private var sequenceBookmarkData: Data = Data()
+    @AppStorage("sequence.count") private var sequenceCount: Int = 10
+    @AppStorage("sequence.fileFormat") private var sequenceFileFormat: String = "JPEG"
+    @AppStorage("sequence.active") private var sequenceActive: Bool = false
+    @AppStorage("sequence.currentCount") private var sequenceCurrentCount: Int = 0
+    @AppStorage("sequence.totalCount") private var sequenceTotalCount: Int = 0
+    @AppStorage("sequence.startTime") private var sequenceStartTimeString: String = ""
+    @State private var sequenceProgressTimer: Timer?
+    
+    // Computed property to convert between Date and String for AppStorage
+    private var sequenceStartTime: Date? {
+        get {
+            guard !sequenceStartTimeString.isEmpty,
+                  let timeInterval = TimeInterval(sequenceStartTimeString) else {
+                return nil
+            }
+            return Date(timeIntervalSince1970: timeInterval)
+        }
+        set {
+            if let date = newValue {
+                sequenceStartTimeString = String(date.timeIntervalSince1970)
+            } else {
+                sequenceStartTimeString = ""
+            }
+        }
+    }
     
     var body: some View {
         cameraCard(
@@ -107,22 +75,57 @@ private struct CombinedCameraSection: View {
             gain: $gain,
             photoExposure: $photoExposure,
             videoExposure: $videoExposure,
+            imageFormat: $imageFormat,
             capturedImage: $capturedImage,
             capturedGain: $capturedGain,
             capturedExposure: $capturedExposure,
             showingPhotoViewer: $showingPhotoViewer,
-            streamRefreshID: $streamRefreshID
+            streamRefreshID: $streamRefreshID,
+            sequenceSavePath: $sequenceSavePath,
+            sequenceBookmarkData: $sequenceBookmarkData,
+            sequenceCount: $sequenceCount,
+            sequenceFileFormat: $sequenceFileFormat,
+            sequenceActive: $sequenceActive,
+            sequenceCurrentCount: $sequenceCurrentCount,
+            sequenceTotalCount: $sequenceTotalCount,
+            sequenceProgressTimer: $sequenceProgressTimer,
+            sequenceStartTimeString: $sequenceStartTimeString,
+            photoExposureValue: photoExposure
         )
         .sheet(isPresented: $showingPhotoViewer) {
             if let image = capturedImage {
                 PhotoViewerSheet(image: image, gain: capturedGain, exposure: capturedExposure)
             }
         }
+        .onAppear {
+            // Restore progress timer if sequence is active
+            if sequenceActive, !sequenceStartTimeString.isEmpty,
+               let timeInterval = TimeInterval(sequenceStartTimeString) {
+                let startTime = Date(timeIntervalSince1970: timeInterval)
+                let elapsed = Date().timeIntervalSince(startTime)
+                let estimatedTime = (photoExposure * Double(sequenceTotalCount)) + 15.0
+                if elapsed < estimatedTime {
+                    // Sequence still in progress, restart progress timer
+                    startSequenceProgressTimer(
+                        total: sequenceTotalCount,
+                        estimatedTime: estimatedTime,
+                        active: $sequenceActive,
+                        currentCount: $sequenceCurrentCount,
+                        progressTimer: $sequenceProgressTimer,
+                        startTimeString: $sequenceStartTimeString
+                    )
+                } else {
+                    // Sequence should have completed, reset state
+                    sequenceActive = false
+                    sequenceStartTimeString = ""
+                }
+            }
+        }
     }
 }
 
 @ViewBuilder
-private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, photoExposure: Binding<Double>, videoExposure: Binding<Double>, capturedImage: Binding<NSImage?>, capturedGain: Binding<Int>, capturedExposure: Binding<Double>, showingPhotoViewer: Binding<Bool>, streamRefreshID: Binding<UUID>) -> some View {
+private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secondaryCamera: SensorsModel.Camera, controller: ControllerState, appState: AppState, gain: Binding<Double>, photoExposure: Binding<Double>, videoExposure: Binding<Double>, imageFormat: Binding<String>, capturedImage: Binding<NSImage?>, capturedGain: Binding<Int>, capturedExposure: Binding<Double>, showingPhotoViewer: Binding<Bool>, streamRefreshID: Binding<UUID>, sequenceSavePath: Binding<String>, sequenceBookmarkData: Binding<Data>, sequenceCount: Binding<Int>, sequenceFileFormat: Binding<String>, sequenceActive: Binding<Bool>, sequenceCurrentCount: Binding<Int>, sequenceTotalCount: Binding<Int>, sequenceProgressTimer: Binding<Timer?>, sequenceStartTimeString: Binding<String>, photoExposureValue: Double) -> some View {
     let isControllerConnected = appState.connectedControllers.contains(controller.id)
     
     SensorsPanel(title: title, icon: "camera.fill") {
@@ -182,6 +185,23 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                 }
+                
+                HStack {
+                    Text("Format:")
+                        .frame(width: 80, alignment: .leading)
+                    Picker(selection: imageFormat, label: EmptyView()) {
+                        ForEach(cameraImageFormats, id: \.self) { format in
+                            Text(format).tag(format)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 100)
+                    Button("Set") {
+                        updateCameraSetting(controller: controller, imageFormat: imageFormat.wrappedValue, appState: appState, streamRefreshID: streamRefreshID)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
             }
             .disabled(!isControllerConnected)
             .padding(.vertical, 4)
@@ -205,6 +225,79 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 .disabled(!isControllerConnected || !primaryCamera.connected)
                 .buttonStyle(.borderedProminent)
             }
+            
+            // Sequence Capture Section
+            Divider()
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Sequence Capture").font(.subheadline).foregroundColor(.secondary)
+                
+                HStack {
+                    Text("Save Path:")
+                        .frame(width: 80, alignment: .leading)
+                    TextField("Select folder...", text: sequenceSavePath)
+                        .textFieldStyle(.roundedBorder)
+                        .disabled(true)
+                    Button("Browse...") {
+                        selectSequenceSavePath(savePath: sequenceSavePath, bookmarkData: sequenceBookmarkData)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                
+                HStack {
+                    Text("Count:")
+                        .frame(width: 80, alignment: .leading)
+                    Stepper(value: sequenceCount, in: 1...10000, step: 1) {
+                        TextField("", value: sequenceCount, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 80)
+                    }
+                }
+                
+                HStack {
+                    Text("Format:")
+                        .frame(width: 80, alignment: .leading)
+                    Picker(selection: sequenceFileFormat, label: EmptyView()) {
+                        Text("JPEG").tag("JPEG")
+                        Text("PNG").tag("PNG")
+                        Text("TIFF").tag("TIFF")
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 100)
+                }
+                
+                if sequenceActive.wrappedValue {
+                    HStack {
+                        ProgressView(value: Double(sequenceCurrentCount.wrappedValue), total: Double(sequenceTotalCount.wrappedValue))
+                            .frame(maxWidth: .infinity)
+                        Text("\(sequenceCurrentCount.wrappedValue)/\(sequenceTotalCount.wrappedValue)")
+                            .font(.caption)
+                            .monospacedDigit()
+                            .frame(width: 80, alignment: .trailing)
+                    }
+                }
+                
+                HStack {
+                    Button(action: {
+                        startSequence(controller: controller, appState: appState, savePath: sequenceSavePath, bookmarkData: sequenceBookmarkData, count: sequenceCount, fileFormat: sequenceFileFormat, active: sequenceActive, currentCount: sequenceCurrentCount, totalCount: sequenceTotalCount, progressTimer: sequenceProgressTimer, startTimeString: sequenceStartTimeString, gain: gain, photoExposure: photoExposure)
+                    }) {
+                        Label("Start Sequence", systemImage: "play.fill")
+                    }
+                    .disabled(!isControllerConnected || !primaryCamera.connected || sequenceActive.wrappedValue || sequenceSavePath.wrappedValue.isEmpty)
+                    .buttonStyle(.borderedProminent)
+                    
+                    Button(action: {
+                        stopSequence(controller: controller, appState: appState, active: sequenceActive, statusTimer: sequenceProgressTimer, startTimeString: sequenceStartTimeString)
+                    }) {
+                        Label("Stop Sequence", systemImage: "stop.fill")
+                    }
+                    .disabled(!isControllerConnected || !sequenceActive.wrappedValue)
+                    .buttonStyle(.bordered)
+                }
+            }
+            .disabled(!isControllerConnected)
+            .padding(.vertical, 4)
             if primaryCamera.streaming {
                 ZStack {
                     MJPEGStreamView(url: "\(controller.baseURL)/camera/stream")
@@ -231,18 +324,18 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                     }
                 }
             } else {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 200)
-                    .cornerRadius(8)
-                    .overlay {
-                        if !primaryCamera.connected {
-                            Text("Camera not connected").foregroundColor(.secondary)
+            Rectangle()
+                .fill(Color.gray.opacity(0.2))
+                .frame(height: 200)
+                .cornerRadius(8)
+                .overlay {
+                    if !primaryCamera.connected {
+                        Text("Camera not connected").foregroundColor(.secondary)
                         } else {
                             Text("Click 'Start Stream' to view live feed").foregroundColor(.secondary)
                         }
                     }
-            }
+                }
         }
     }
 }
@@ -311,7 +404,364 @@ private func capturePhoto(controller: ControllerState, appState: AppState, gain:
     }
 }
 
-private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, photoExposure: Double? = nil, videoExposure: Double? = nil, appState: AppState, streamRefreshID: Binding<UUID>? = nil) {
+private func selectSequenceSavePath(savePath: Binding<String>, bookmarkData: Binding<Data>) {
+    let panel = NSOpenPanel()
+    panel.canChooseFiles = false
+    panel.canChooseDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.canCreateDirectories = true
+    panel.message = "Select folder to save sequence photos on this Mac"
+    
+    if panel.runModal() == .OK {
+        if let url = panel.url {
+            // Start accessing the resource immediately (NSOpenPanel grants temporary access)
+            let accessing = url.startAccessingSecurityScopedResource()
+            
+            // Create security-scoped bookmark for persistent access
+            do {
+                let bookmark = try url.bookmarkData(
+                    options: [.withSecurityScope],
+                    includingResourceValuesForKeys: nil,
+                    relativeTo: nil
+                )
+                bookmarkData.wrappedValue = bookmark
+                savePath.wrappedValue = url.path
+                print("✅ Created security-scoped bookmark for: \(url.path), accessing: \(accessing)")
+            } catch {
+                print("❌ Failed to create bookmark: \(error)")
+                bookmarkData.wrappedValue = Data()
+                savePath.wrappedValue = url.path
+            }
+            
+            // Stop accessing (we'll use the bookmark later)
+            if accessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+    }
+}
+
+private func startSequence(controller: ControllerState, appState: AppState, savePath: Binding<String>, bookmarkData: Binding<Data>, count: Binding<Int>, fileFormat: Binding<String>, active: Binding<Bool>, currentCount: Binding<Int>, totalCount: Binding<Int>, progressTimer: Binding<Timer?>, startTimeString: Binding<String>, gain: Binding<Double>, photoExposure: Binding<Double>) {
+    Task {
+        do {
+            guard let apiClient = controller.apiClient else { return }
+            
+            if savePath.wrappedValue.isEmpty {
+                appState.addLog(level: .error, module: "camera", message: "Please select a save path first", controller: controller)
+                return
+            }
+            
+            // Resolve bookmark to get URL with security-scoped access
+            var folderURL: URL?
+            var isStale = false
+            
+            if !bookmarkData.wrappedValue.isEmpty {
+                do {
+                    folderURL = try URL(
+                        resolvingBookmarkData: bookmarkData.wrappedValue,
+                        options: [.withSecurityScope, .withoutUI],
+                        relativeTo: nil,
+                        bookmarkDataIsStale: &isStale
+                    )
+                    if let resolvedURL = folderURL {
+                        print("✅ Resolved bookmark to: \(resolvedURL.path)")
+                    }
+                    if isStale {
+                        appState.addLog(level: .warn, module: "camera", message: "Bookmark is stale, please reselect folder", controller: controller)
+                        print("⚠️ Bookmark is stale")
+                    }
+                } catch {
+                    appState.addLog(level: .error, module: "camera", message: "Failed to resolve bookmark: \(error.localizedDescription)", controller: controller)
+                    print("❌ Failed to resolve bookmark: \(error)")
+                }
+            } else {
+                print("⚠️ No bookmark data, using path fallback")
+            }
+            
+            // Fallback to path if bookmark resolution failed
+            if folderURL == nil {
+                folderURL = URL(fileURLWithPath: savePath.wrappedValue)
+            }
+            
+            guard let folderURL = folderURL else {
+                appState.addLog(level: .error, module: "camera", message: "Invalid save path", controller: controller)
+                return
+            }
+            
+            // Validate save path exists first
+            let fileManager = FileManager.default
+            var isDirectory: ObjCBool = false
+            if !fileManager.fileExists(atPath: folderURL.path, isDirectory: &isDirectory) || !isDirectory.boolValue {
+                appState.addLog(level: .error, module: "camera", message: "Invalid save path: \(folderURL.path)", controller: controller)
+                return
+            }
+            
+            await MainActor.run {
+                active.wrappedValue = true
+                totalCount.wrappedValue = count.wrappedValue
+                currentCount.wrappedValue = 0
+            }
+            
+            appState.addLog(level: .info, module: "camera", message: "Starting sequence capture: \(count.wrappedValue) photos to \(savePath.wrappedValue)", controller: controller)
+            
+            // Capture all photos at once (simple: tell camera to take N photos)
+            let total = count.wrappedValue
+            let format = fileFormat.wrappedValue
+            let currentGain = Int(gain.wrappedValue)
+            let exposure = photoExposure.wrappedValue
+            
+            // Calculate estimated total time: (exposure * count) + network overhead
+            let estimatedTime = (exposure * Double(total)) + 15.0  // Add 15 seconds for network/processing
+            
+            let startTime = Date()
+            await MainActor.run {
+                startTimeString.wrappedValue = String(startTime.timeIntervalSince1970)
+                totalCount.wrappedValue = total
+                currentCount.wrappedValue = 0
+                active.wrappedValue = true
+            }
+            
+            // Start progress timer for smooth progress bar
+            await MainActor.run {
+                startSequenceProgressTimer(total: total, estimatedTime: estimatedTime, active: active, currentCount: currentCount, progressTimer: progressTimer, startTimeString: startTimeString)
+            }
+            
+            appState.addLog(level: .info, module: "camera", message: "Capturing \(total) photos (estimated time: \(String(format: "%.1f", estimatedTime))s)...", controller: controller)
+            
+            let response = try await apiClient.captureSequence(count: total)
+            
+            // Debug: Log response details
+            print("📸 [Sequence] Received \(response.photos.count) photos from server")
+            for (idx, photo) in response.photos.enumerated() {
+                if photo == nil {
+                    print("⚠️ [Sequence] Photo \(idx + 1) is nil")
+                } else {
+                    print("✅ [Sequence] Photo \(idx + 1) has \(photo!.count) characters")
+                }
+            }
+            
+            // Start accessing security-scoped resource BEFORE saving files
+            // Keep access for the entire save loop
+            var accessing = false
+            if !bookmarkData.wrappedValue.isEmpty {
+                // Try to access using bookmark
+                accessing = folderURL.startAccessingSecurityScopedResource()
+                if !accessing {
+                    appState.addLog(level: .error, module: "camera", message: "Failed to access security-scoped resource. Bookmark may be invalid. Please reselect folder.", controller: controller)
+                    print("❌ Failed to start accessing security-scoped resource for: \(folderURL.path)")
+                } else {
+                    print("✅ Successfully started accessing security-scoped resource for: \(folderURL.path)")
+                }
+            } else {
+                // No bookmark, try direct access (may not work due to sandbox)
+                accessing = folderURL.startAccessingSecurityScopedResource()
+                if !accessing {
+                    appState.addLog(level: .error, module: "camera", message: "No bookmark available and direct access failed. Please select folder using Browse button.", controller: controller)
+                    print("❌ No bookmark and direct access failed for: \(folderURL.path)")
+                }
+            }
+            
+            defer {
+                if accessing {
+                    folderURL.stopAccessingSecurityScopedResource()
+                    print("🔒 Stopped accessing security-scoped resource")
+                }
+            }
+            
+            // If we couldn't get access, abort
+            if !accessing {
+                await MainActor.run {
+                    active.wrappedValue = false
+                    progressTimer.wrappedValue?.invalidate()
+                    progressTimer.wrappedValue = nil
+                    startTimeString.wrappedValue = ""
+                }
+                return
+            }
+            
+            // Save all photos
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+            let baseTimestamp = dateFormatter.string(from: Date())
+            
+            let fileExtension = format.lowercased() == "jpeg" ? "jpg" : format.lowercased()
+            
+            var savedCount = 0
+            for (index, photoBase64) in response.photos.enumerated() {
+                // Check if stopped by user
+                if !active.wrappedValue {
+                    appState.addLog(level: .info, module: "camera", message: "Sequence stopped by user", controller: controller)
+                    break
+                }
+                
+                guard let photoBase64 = photoBase64 else {
+                    appState.addLog(level: .error, module: "camera", message: "Photo \(index + 1) is nil", controller: controller)
+                    continue
+                }
+                
+                // Clean base64 string (remove data URL prefix if present)
+                var cleanBase64 = photoBase64
+                if let commaIndex = cleanBase64.firstIndex(of: ",") {
+                    cleanBase64 = String(cleanBase64[cleanBase64.index(after: commaIndex)...])
+                }
+                
+                guard let imageData = Data(base64Encoded: cleanBase64, options: .ignoreUnknownCharacters),
+                      let image = NSImage(data: imageData) else {
+                    appState.addLog(level: .error, module: "camera", message: "Failed to decode photo \(index + 1). Base64 length: \(photoBase64.count)", controller: controller)
+                    continue
+                }
+                
+                // Generate filename
+                let filename = "\(baseTimestamp)_seq\(String(format: "%04d", index + 1))of\(String(format: "%04d", total))_gain\(currentGain)_exp\(String(format: "%.3f", exposure))s.\(fileExtension)"
+                let fileURL = folderURL.appendingPathComponent(filename)
+                
+                // Convert and save image in desired format
+                guard let tiffData = image.tiffRepresentation,
+                      let bitmapImage = NSBitmapImageRep(data: tiffData) else {
+                    appState.addLog(level: .error, module: "camera", message: "Failed to convert photo \(index + 1) to bitmap", controller: controller)
+                    continue
+                }
+                
+                var finalData: Data?
+                switch format.uppercased() {
+                case "JPEG":
+                    finalData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: 1.0])
+                case "PNG":
+                    finalData = bitmapImage.representation(using: .png, properties: [:])
+                case "TIFF":
+                    finalData = bitmapImage.representation(using: .tiff, properties: [:])
+                default:
+                    finalData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: 1.0])
+                }
+                
+                guard let data = finalData else {
+                    appState.addLog(level: .error, module: "camera", message: "Failed to encode photo \(index + 1) as \(format)", controller: controller)
+                    continue
+                }
+                
+                // Write file - security-scoped access for folder is already active
+                do {
+                    try data.write(to: fileURL, options: .atomic)
+                    print("✅ Saved file: \(filename)")
+                    savedCount += 1
+                } catch {
+                    let nsError = error as NSError
+                    appState.addLog(level: .error, module: "camera", message: "Failed to write file \(filename): \(error.localizedDescription) (domain: \(nsError.domain), code: \(nsError.code))", controller: controller)
+                    print("❌ Failed to write file: \(error), URL: \(fileURL.path)")
+                    continue
+                }
+                
+                await MainActor.run {
+                    currentCount.wrappedValue = index + 1
+                }
+                
+                appState.addLog(level: .info, module: "camera", message: "Saved photo \(index + 1)/\(total): \(filename)", controller: controller)
+            }
+            
+            await MainActor.run {
+                progressTimer.wrappedValue?.invalidate()
+                progressTimer.wrappedValue = nil
+                startTimeString.wrappedValue = ""
+                // Set final count
+                currentCount.wrappedValue = savedCount
+                active.wrappedValue = false
+                if savedCount >= totalCount.wrappedValue {
+                    appState.addLog(level: .info, module: "camera", message: "Sequence capture completed: \(savedCount)/\(totalCount.wrappedValue) photos", controller: controller)
+                }
+            }
+            
+        } catch {
+            await MainActor.run {
+                active.wrappedValue = false
+                startTimeString.wrappedValue = ""
+                progressTimer.wrappedValue?.invalidate()
+                progressTimer.wrappedValue = nil
+            }
+            appState.addLog(level: .error, module: "camera", message: "Failed to capture sequence: \(error.localizedDescription)", controller: controller)
+        }
+    }
+}
+
+private func stopSequence(controller: ControllerState, appState: AppState, active: Binding<Bool>, statusTimer: Binding<Timer?>, startTimeString: Binding<String>) {
+    // Just set active to false, the capture loop will check this and stop
+    active.wrappedValue = false
+    statusTimer.wrappedValue?.invalidate()
+    statusTimer.wrappedValue = nil
+    startTimeString.wrappedValue = ""
+    appState.addLog(level: .info, module: "camera", message: "Stopping sequence capture...", controller: controller)
+}
+
+private func startSequenceProgressTimer(total: Int, estimatedTime: Double, active: Binding<Bool>, currentCount: Binding<Int>, progressTimer: Binding<Timer?>, startTimeString: Binding<String>) {
+    // Stop existing timer if any
+    progressTimer.wrappedValue?.invalidate()
+    
+    // Create timer to update progress smoothly
+    let timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+        guard active.wrappedValue,
+              !startTimeString.wrappedValue.isEmpty,
+              let timeInterval = TimeInterval(startTimeString.wrappedValue) else {
+            progressTimer.wrappedValue?.invalidate()
+            progressTimer.wrappedValue = nil
+            return
+        }
+        
+        let startTime = Date(timeIntervalSince1970: timeInterval)
+        let elapsed = Date().timeIntervalSince(startTime)
+        let progress = min(elapsed / estimatedTime, 1.0)
+        let estimatedCurrent = Int(Double(total) * progress)
+        
+        Task { @MainActor in
+            currentCount.wrappedValue = min(estimatedCurrent, total)
+        }
+        
+        // Stop timer if we've reached the end
+        if progress >= 1.0 {
+            progressTimer.wrappedValue?.invalidate()
+            progressTimer.wrappedValue = nil
+        }
+    }
+    
+    progressTimer.wrappedValue = timer
+    RunLoop.main.add(timer, forMode: .common)
+}
+
+private func startSequenceStatusPolling(controller: ControllerState, appState: AppState, active: Binding<Bool>, currentCount: Binding<Int>, totalCount: Binding<Int>, statusTimer: Binding<Timer?>) {
+    // Stop existing timer if any
+    statusTimer.wrappedValue?.invalidate()
+    
+    // Create new timer
+    let timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak appState] _ in
+        Task {
+            do {
+                guard let apiClient = controller.apiClient else { return }
+                let status = try await apiClient.getSequenceStatus()
+                
+                await MainActor.run {
+                    active.wrappedValue = status.active
+                    currentCount.wrappedValue = status.currentCount
+                    totalCount.wrappedValue = status.totalCount
+                    
+                    if !status.active {
+                        // Sequence completed or stopped
+                        statusTimer.wrappedValue?.invalidate()
+                        statusTimer.wrappedValue = nil
+                        
+                        if status.currentCount >= status.totalCount {
+                            appState?.addLog(level: .info, module: "camera", message: "Sequence capture completed: \(status.currentCount)/\(status.totalCount) photos", controller: controller)
+                        }
+                    }
+                }
+            } catch {
+                // Ignore polling errors
+            }
+        }
+    }
+    
+    statusTimer.wrappedValue = timer
+    RunLoop.main.add(timer, forMode: .common)
+}
+
+private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, photoExposure: Double? = nil, videoExposure: Double? = nil, imageFormat: String? = nil, appState: AppState, streamRefreshID: Binding<UUID>? = nil) {
     Task {
         do {
             guard let apiClient = controller.apiClient else { 
@@ -337,7 +787,11 @@ private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, 
                 appState.addLog(level: .info, module: "camera", message: "Sending gain: \(g)", controller: controller)
             }
             
-            try await apiClient.updateCameraSettings(gain: gain, photoExposure: photoExpMicroseconds, videoExposure: videoExpMicroseconds)
+            if let format = imageFormat {
+                appState.addLog(level: .info, module: "camera", message: "Sending image format: \(format)", controller: controller)
+            }
+            
+            try await apiClient.updateCameraSettings(gain: gain, photoExposure: photoExpMicroseconds, videoExposure: videoExpMicroseconds, imageFormat: imageFormat)
             
             if let g = gain {
                 appState.addLog(level: .info, module: "camera", message: "✓ Gain set to \(g)", controller: controller)
@@ -373,6 +827,11 @@ private func updateCameraSetting(controller: ControllerState, gain: Int? = nil, 
                     
                     appState.addLog(level: .info, module: "camera", message: "Stream refreshed with new video exposure", controller: controller)
                 }
+            }
+            if let format = imageFormat {
+                appState.addLog(level: .info, module: "camera", message: "✓ Image format set to \(format) (only affects photo capture, not video stream)", controller: controller)
+                // Note: Image format only affects photo capture, not video streaming
+                // Video stream always uses RGB24 format for real-time performance
             }
         } catch {
             appState.addLog(level: .error, module: "camera", message: "Failed to update settings: \(error.localizedDescription)", controller: controller)
@@ -426,6 +885,30 @@ private struct PhotoViewerSheet: View {
     @State private var saveSuccessMessage: String?
     @State private var showSavePanel = false
     @State private var document: ImageDocument?
+    @State private var fileFormat: FileFormat = .jpeg
+    private let jpegQuality: Double = 1.0  // Always use 100% quality
+    
+    enum FileFormat: String, CaseIterable {
+        case jpeg = "JPEG"
+        case png = "PNG"
+        case tiff = "TIFF"
+        
+        var utType: UTType {
+            switch self {
+            case .jpeg: return .jpeg
+            case .png: return .png
+            case .tiff: return .tiff
+            }
+        }
+        
+        var fileExtension: String {
+            switch self {
+            case .jpeg: return "jpg"
+            case .png: return "png"
+            case .tiff: return "tiff"
+            }
+        }
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -434,30 +917,46 @@ private struct PhotoViewerSheet: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 Spacer()
+                
                 if let message = saveSuccessMessage {
                     Text(message)
                         .font(.caption)
                         .foregroundColor(.green)
                         .padding(.horizontal, 8)
                 }
+                
+                // File format selector - in top right, next to Save button
+                HStack(spacing: 6) {
+                    Text("Format:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Picker("", selection: $fileFormat) {
+                        ForEach(FileFormat.allCases, id: \.self) { format in
+                            Text(format.rawValue).tag(format)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 80)
+                }
+                .padding(.trailing, 1)
+                
                 Button("Save") {
                     prepareSave()
                 }
                 .buttonStyle(.bordered)
-                .padding(.top, 2)
                 .fileExporter(
                     isPresented: $showSavePanel,
                     document: document,
-                    contentType: .jpeg,
+                    contentType: fileFormat.utType,
                     defaultFilename: generateDefaultFilename()
                 ) { result in
                     handleSaveResult(result)
                 }
+                
                 Button("Close") {
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)
-                .padding(.top, 2)
             }
             .padding()
             
@@ -471,22 +970,16 @@ private struct PhotoViewerSheet: View {
             
             Divider()
             
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Size: \(Int(image.size.width)) × \(Int(image.size.height))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    HStack(spacing: 12) {
-                        Text("Gain: \(gain)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        Text("•")
-                            .foregroundColor(.secondary)
-                        Text(String(format: "Exposure: %.3f s", exposure))
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
+            HStack(spacing: 12) {
+                Text("Size: \(Int(image.size.width)) × \(Int(image.size.height))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text("Gain: \(gain)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(String(format: "Exposure: %.3f s", exposure))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 Spacer()
             }
             .padding()
@@ -498,20 +991,34 @@ private struct PhotoViewerSheet: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         let timestamp = formatter.string(from: Date())
-        return "\(timestamp)_gain\(gain)_exp\(String(format: "%.3f", exposure))s.jpg"
+        return "\(timestamp)_gain\(gain)_exp\(String(format: "%.3f", exposure))s.\(fileFormat.fileExtension)"
     }
     
     private func prepareSave() {
-        // Convert NSImage to JPEG data
         guard let tiffData = image.tiffRepresentation,
-              let bitmapImage = NSBitmapImageRep(data: tiffData),
-              let jpegData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: 0.9]) else {
+              let bitmapImage = NSBitmapImageRep(data: tiffData) else {
             saveSuccessMessage = "Save failed: Could not convert image"
             return
         }
         
+        var imageData: Data?
+        
+        switch fileFormat {
+        case .jpeg:
+            imageData = bitmapImage.representation(using: .jpeg, properties: [.compressionFactor: jpegQuality])
+        case .png:
+            imageData = bitmapImage.representation(using: .png, properties: [:])
+        case .tiff:
+            imageData = bitmapImage.representation(using: .tiff, properties: [:])
+        }
+        
+        guard let data = imageData else {
+            saveSuccessMessage = "Save failed: Could not encode image"
+            return
+        }
+        
         // Create document for fileExporter
-        document = ImageDocument(data: jpegData)
+        document = ImageDocument(data: data, contentType: fileFormat.utType)
         showSavePanel = true
     }
     
@@ -530,12 +1037,14 @@ private struct PhotoViewerSheet: View {
 
 // Document class for fileExporter
 struct ImageDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.jpeg] }
+    static var readableContentTypes: [UTType] { [.jpeg, .png, .tiff] }
     
     var data: Data
+    var contentType: UTType
     
-    init(data: Data) {
+    init(data: Data, contentType: UTType = .jpeg) {
         self.data = data
+        self.contentType = contentType
     }
     
     init(configuration: ReadConfiguration) throws {
@@ -543,6 +1052,7 @@ struct ImageDocument: FileDocument {
             throw CocoaError(.fileReadCorruptFile)
         }
         self.data = data
+        self.contentType = configuration.contentType
     }
     
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {

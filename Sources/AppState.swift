@@ -4,7 +4,7 @@ import Combine
 
 @MainActor
 final class AppState: ObservableObject {
-    @Published var selection: AppSection = .roof
+    @Published var selection: AppSection = .sensors
     @Published private(set) var controllers: [ControllerState] = []
     @Published private(set) var activeControllerIDs: [ControllerRole: UUID] = [:]
     @Published var connectedControllers: Set<UUID> = []  // Track connected controllers
@@ -59,8 +59,6 @@ final class AppState: ObservableObject {
         return controllers.first(where: { $0.roles.contains(role) })
     }
     
-    var roofController: ControllerState? { controller(for: .roof) }
-    var sensorsController: ControllerState? { controller(for: .sensors) }
     var camerasController: ControllerState? { controller(for: .cameras) }
     
     func setActiveController(_ role: ControllerRole, controllerID: UUID) {
@@ -173,26 +171,6 @@ final class AppState: ObservableObject {
         }
     }
     
-    func openRoof() {
-        roofController?.openRoof()
-    }
-    
-    func closeRoof() {
-        roofController?.closeRoof()
-    }
-    
-    func stopRoof() {
-        roofController?.stopRoof()
-    }
-    
-    func lockMagLock() {
-        roofController?.lockMagLock()
-    }
-    
-    func unlockMagLock() {
-        roofController?.unlockMagLock()
-    }
-    
     func addLog(level: LogEntry.Level, module: String, message: String, controller: ControllerState? = nil) {
         var entry = LogEntry(ts: Date(), module: module, level: level, message: message, extra: nil)
         entry.controllerID = controller?.id
@@ -251,32 +229,21 @@ final class AppState: ObservableObject {
     }
 
     static let preview: AppState = {
-        let roofConfig = ControllerConfig(
+        let cameraConfig = ControllerConfig(
             id: UUID(),
-            name: "Roof Controller",
-            baseURL: "http://demo-roof.local:8080",
+            name: "Camera Controller",
+            baseURL: "http://demo-camera.local:8080",
             authToken: nil,
-            roles: [.roof]
+            roles: [.cameras]
         )
-        let sensorConfig = ControllerConfig(
-            id: UUID(),
-            name: "Sensor Controller",
-            baseURL: "http://demo-sensor.local:8080",
-            authToken: nil,
-            roles: [.sensors, .cameras]
-        )
-        let roofController = ControllerState(config: roofConfig)
-        roofController.roof = RoofModel(state: .closed, openLimit: false, closeLimit: true, currentA: 0.2, travelEstimate: .init(percent: 0.1, remainingSec: 120, confidence: .high))
-        roofController.safety = SafetyModel(rain: false, windHigh: false, doorOpen: false, powerOk: true, safeToOpenRoof: true)
-        let sensorController = ControllerState(config: sensorConfig)
-        sensorController.sensors = SensorsModel(
+        let cameraController = ControllerState(config: cameraConfig)
+        cameraController.sensors = SensorsModel(
             temperature: 18.5,
             humidity: 65,
             weatherCam: .init(connected: true, streaming: false, lastSnapshot: Date()),
             meteorCam: .init(connected: true, streaming: true, lastSnapshot: Date())
         )
-        sensorController.safety = SafetyModel(rain: false, windHigh: false, doorOpen: false, powerOk: true, safeToOpenRoof: true)
-        let state = AppState(initialControllers: [roofController, sensorController])
+        let state = AppState(initialControllers: [cameraController])
         state.weather = WeatherModel(
             temperatureC: 16.2,
             apparentTemperatureC: 15.7,
@@ -291,23 +258,6 @@ final class AppState: ObservableObject {
     }()
 }
 
-struct RoofModel {
-    enum State { case open, closed, moving, fault }
-    struct TravelEstimate {
-        enum Confidence { case high, medium, low }
-        var percent: Double
-        var remainingSec: Double
-        var confidence: Confidence
-    }
-    var state: State = .closed
-    var openLimit: Bool = false
-    var closeLimit: Bool = true
-    var currentA: Double? = nil
-    var magLockEngaged: Bool = false
-    var fault: String? = nil
-    var travelEstimate: TravelEstimate = .init(percent: 0, remainingSec: 0, confidence: .high)
-}
-
 struct SensorsModel {
     var temperature: Double? = nil
     var humidity: Double? = nil
@@ -319,14 +269,6 @@ struct SensorsModel {
     }
     var weatherCam: Camera = Camera()
     var meteorCam: Camera = Camera()
-}
-
-struct SafetyModel {
-    var rain: Bool = false
-    var windHigh: Bool = false
-    var doorOpen: Bool = false
-    var powerOk: Bool = true
-    var safeToOpenRoof: Bool = true
 }
 
 struct LogEntry: Identifiable {

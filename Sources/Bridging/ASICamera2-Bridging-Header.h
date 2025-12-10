@@ -1,6 +1,6 @@
 //
 //  ASICamera2-Bridging-Header.h
-//  Pomfret VISTA Observatory
+//  Pomfret Astro
 //
 //  Bridging header for ASI Camera SDK
 //

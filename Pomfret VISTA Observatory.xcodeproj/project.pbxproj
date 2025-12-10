@@ -13,13 +13,11 @@
 		0BD7526C2ECA9F23004EEF35 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752622ECA9F23004EEF35 /* SettingsView.swift */; };
 		0BD7526D2ECA9F23004EEF35 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752652ECA9F23004EEF35 /* AppState.swift */; };
 		0BD7526E2ECA9F23004EEF35 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525E2ECA9F23004EEF35 /* LoginView.swift */; };
-		0BD7526F2ECA9F23004EEF35 /* RoofView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752602ECA9F23004EEF35 /* RoofView.swift */; };
 		0BD752702ECA9F23004EEF35 /* ObservatoryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752682ECA9F23004EEF35 /* ObservatoryApp.swift */; };
 		0BD752712ECA9F23004EEF35 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752662ECA9F23004EEF35 /* ContentView.swift */; };
 		0BD752732ECA9F23004EEF35 /* StatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */; };
 		0BD752742ECA9F23004EEF35 /* SensorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752612ECA9F23004EEF35 /* SensorsView.swift */; };
 		0BD752752ECA9F23004EEF35 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752642ECA9F23004EEF35 /* APIClient.swift */; };
-		0BD752762ECA9F23004EEF35 /* ConfirmDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */; };
 		0BD7527D2ECAA815004EEF35 /* assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BD7527C2ECAA815004EEF35 /* assets.xcassets */; };
 		0BD7527E2ECE2069004EEF35 /* ControllerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD7527F2ECE2069004EEF35 /* ControllerState.swift */; };
 		0BD752802ECE27C9004EEF35 /* WeatherClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD752812ECE27C9004EEF35 /* WeatherClient.swift */; };
@@ -27,13 +25,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pomfret VISTA Observatory.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0BC2AD662ECA607B00E323EF /* Pomfret Astro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pomfret Astro.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MJPEGStreamView.swift; sourceTree = "<group>"; };
-		0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmDialog.swift; sourceTree = "<group>"; };
 		0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBadge.swift; sourceTree = "<group>"; };
 		0BD7525E2ECA9F23004EEF35 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		0BD7525F2ECA9F23004EEF35 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
-		0BD752602ECA9F23004EEF35 /* RoofView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoofView.swift; sourceTree = "<group>"; };
 		0BD752612ECA9F23004EEF35 /* SensorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorsView.swift; sourceTree = "<group>"; };
 		0BD752622ECA9F23004EEF35 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		0BD752642ECA9F23004EEF35 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
@@ -72,7 +68,7 @@
 		0BC2AD672ECA607B00E323EF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */,
+				0BC2AD662ECA607B00E323EF /* Pomfret Astro.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -81,7 +77,6 @@
 			isa = PBXGroup;
 			children = (
 				0BC746172EDFC1D900860A77 /* MJPEGStreamView.swift */,
-				0BD7525A2ECA9F23004EEF35 /* ConfirmDialog.swift */,
 				0BD7525B2ECA9F23004EEF35 /* StatusBadge.swift */,
 			);
 			path = Components;
@@ -94,7 +89,6 @@
 				0BD7525E2ECA9F23004EEF35 /* LoginView.swift */,
 				0BD7525F2ECA9F23004EEF35 /* LogsView.swift */,
 				0BD758012ED057D500123456 /* WeatherView.swift */,
-				0BD752602ECA9F23004EEF35 /* RoofView.swift */,
 				0BD752612ECA9F23004EEF35 /* SensorsView.swift */,
 				0BD752622ECA9F23004EEF35 /* SettingsView.swift */,
 			);
@@ -127,9 +121,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0BC2AD652ECA607B00E323EF /* Pomfret VISTA Observatory */ = {
+		0BC2AD652ECA607B00E323EF /* Pomfret Astro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret VISTA Observatory" */;
+			buildConfigurationList = 0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret Astro" */;
 			buildPhases = (
 				0BC2AD622ECA607B00E323EF /* Sources */,
 				0BC2AD632ECA607B00E323EF /* Frameworks */,
@@ -139,11 +133,11 @@
 			);
 			dependencies = (
 			);
-			name = "Pomfret VISTA Observatory";
+			name = "Pomfret Astro";
 			packageProductDependencies = (
 			);
-			productName = "Pomfret VISTA Observatory";
-			productReference = 0BC2AD662ECA607B00E323EF /* Pomfret VISTA Observatory.app */;
+			productName = "Pomfret Astro";
+			productReference = 0BC2AD662ECA607B00E323EF /* Pomfret Astro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -175,7 +169,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0BC2AD652ECA607B00E323EF /* Pomfret VISTA Observatory */,
+				0BC2AD652ECA607B00E323EF /* Pomfret Astro */,
 			);
 		};
 /* End PBXProject section */
@@ -201,13 +195,11 @@
 				0BD7526C2ECA9F23004EEF35 /* SettingsView.swift in Sources */,
 				0BD7526D2ECA9F23004EEF35 /* AppState.swift in Sources */,
 				0BD7526E2ECA9F23004EEF35 /* LoginView.swift in Sources */,
-				0BD7526F2ECA9F23004EEF35 /* RoofView.swift in Sources */,
 				0BD752702ECA9F23004EEF35 /* ObservatoryApp.swift in Sources */,
 				0BD752712ECA9F23004EEF35 /* ContentView.swift in Sources */,
 				0BD752732ECA9F23004EEF35 /* StatusBadge.swift in Sources */,
 				0BD752742ECA9F23004EEF35 /* SensorsView.swift in Sources */,
 				0BD752752ECA9F23004EEF35 /* APIClient.swift in Sources */,
-				0BD752762ECA9F23004EEF35 /* ConfirmDialog.swift in Sources */,
 				0BD7527E2ECE2069004EEF35 /* ControllerState.swift in Sources */,
 				0BD752802ECE27C9004EEF35 /* WeatherClient.swift in Sources */,
 				0BD758002ED057D500123456 /* WeatherView.swift in Sources */,
@@ -348,6 +340,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 7JCHGTT4P2;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -364,8 +357,8 @@
 				ENABLE_RESOURCE_ACCESS_USB = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Info.plist;
 				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -405,6 +398,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 7JCHGTT4P2;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
@@ -421,8 +415,8 @@
 				ENABLE_RESOURCE_ACCESS_USB = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Info.plist;
 				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -462,7 +456,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret VISTA Observatory" */ = {
+		0BC2AD712ECA607C00E323EF /* Build configuration list for PBXNativeTarget "Pomfret Astro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				0BC2AD722ECA607C00E323EF /* Debug */,

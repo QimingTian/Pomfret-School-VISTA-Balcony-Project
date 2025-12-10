@@ -28,7 +28,7 @@ struct SettingsView: View {
                     )
                 }
                 Button {
-                    appState.addController(name: "Controller \(appState.controllers.count + 1)", baseURL: "http://localhost:8080", roles: Set(ControllerRole.allCases))
+                    appState.addController(name: "Controller \(appState.controllers.count + 1)", baseURL: "http://localhost:8080", roles: [.cameras])
                 } label: {
                     Label("Add Controller", systemImage: "plus.circle")
                 }
@@ -91,8 +91,6 @@ private struct ControllerSettingsCard: View {
                                 set: { newValue in
                                     if newValue {
                                         controller.roles.insert(role)
-                                    } else if controller.roles.count > 1 {
-                                        controller.roles.remove(role)
                                     }
                                     onChange()
                                 }

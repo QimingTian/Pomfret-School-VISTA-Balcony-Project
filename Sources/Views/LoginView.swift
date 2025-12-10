@@ -14,7 +14,7 @@ struct LoginView: View {
 				.font(.system(size: 64))
 				.foregroundColor(.blue)
 			
-			Text("Observatory Control")
+			Text("Pomfret Astro")
 				.font(.largeTitle)
 				.fontWeight(.bold)
 			
