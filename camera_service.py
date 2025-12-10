@@ -956,14 +956,23 @@ def update_settings():
                 camera.stop_stream()
                 time.sleep(0.5)
             
-            # Set ASI_AUTO_MAX_EXP (backup, in case we switch to auto later)
+            # Set ASI_EXPOSURE directly (manual exposure mode for video)
+            result_exp = asi_lib.ASISetControlValue(camera.camera_id, ASI_EXPOSURE, video_exposure_us, ASI_FALSE)
+            
+            # Also set ASI_AUTO_MAX_EXP as backup (in case we switch to auto later)
             result_max_exp = asi_lib.ASISetControlValue(camera.camera_id, ASI_AUTO_MAX_EXP, video_exposure_us, ASI_FALSE)
             
-            # Verify it was set
+            # Verify ASI_EXPOSURE was set
+            actual_exp = ctypes.c_long(0)
+            auto_exp = ctypes.c_int(0)
+            asi_lib.ASIGetControlValue(camera.camera_id, ASI_EXPOSURE, ctypes.byref(actual_exp), ctypes.byref(auto_exp))
+            
+            # Verify ASI_AUTO_MAX_EXP was set
             actual_max_exp = ctypes.c_long(0)
             auto_max_exp = ctypes.c_int(0)
             asi_lib.ASIGetControlValue(camera.camera_id, ASI_AUTO_MAX_EXP, ctypes.byref(actual_max_exp), ctypes.byref(auto_max_exp))
             
+            print(f"[Settings] Set ASI_EXPOSURE to {video_exposure_us} μs (result: {result_exp}, actual: {actual_exp.value} μs, auto: {auto_exp.value})")
             print(f"[Settings] Set ASI_AUTO_MAX_EXP to {video_exposure_us} μs (result: {result_max_exp}, actual: {actual_max_exp.value} μs)")
             
             # Restart stream if it was active
