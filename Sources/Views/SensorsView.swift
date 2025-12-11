@@ -685,7 +685,6 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                     Text("WB Auto:")
                         .frame(width: 80, alignment: .leading)
                     Toggle("", isOn: wbAuto)
-                    Spacer()
                     Button("Set") {
                         updateCameraSetting(controller: controller, wbAuto: wbAuto.wrappedValue, appState: appState, streamRefreshID: streamRefreshID)
                     }
