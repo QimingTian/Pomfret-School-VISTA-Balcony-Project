@@ -257,8 +257,15 @@ class ASICamera:
             
             # Set initial white balance (only for color cameras)
             if camera_info.IsColorCam:
-                result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, camera_state['wb_r'], ASI_FALSE)
-                result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, camera_state['wb_b'], ASI_FALSE)
+                wb_auto = camera_state.get('wb_auto', False)
+                if wb_auto:
+                    # Set auto white balance
+                    result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, 0, ASI_TRUE)
+                    result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, 0, ASI_TRUE)
+                else:
+                    # Set manual white balance
+                    result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, camera_state['wb_r'], ASI_FALSE)
+                    result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, camera_state['wb_b'], ASI_FALSE)
             else:
                 result_wb_r = None
                 result_wb_b = None
@@ -272,6 +279,7 @@ class ASICamera:
             print(f"  Gain: {camera_state['gain']} → actual: {actual_gain.value} (result: {result_gain})")
             print(f"  Exposure (for photo): {camera_state['exposure']} μs ({camera_state['exposure']/1000000:.3f} s)")
             if camera_info.IsColorCam:
+                wb_auto = camera_state.get('wb_auto', False)
                 if wb_auto:
                     print(f"  White Balance: Auto (R result: {result_wb_r}, B result: {result_wb_b})")
                 else:
@@ -373,10 +381,21 @@ class ASICamera:
         result_gain = asi_lib.ASISetControlValue(self.camera_id, ASI_GAIN, gain, ASI_FALSE)
         
         # Set white balance (only for color cameras)
-        wb_r = camera_state.get('wb_r', 50)
-        wb_b = camera_state.get('wb_b', 50)
-        result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, wb_r, ASI_FALSE)
-        result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, wb_b, ASI_FALSE)
+        if camera_info.IsColorCam:
+            wb_auto = camera_state.get('wb_auto', False)
+            if wb_auto:
+                # Set auto white balance
+                result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, 0, ASI_TRUE)
+                result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, 0, ASI_TRUE)
+            else:
+                # Set manual white balance
+                wb_r = camera_state.get('wb_r', 50)
+                wb_b = camera_state.get('wb_b', 50)
+                result_wb_r = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_R, wb_r, ASI_FALSE)
+                result_wb_b = asi_lib.ASISetControlValue(self.camera_id, ASI_WB_B, wb_b, ASI_FALSE)
+        else:
+            result_wb_r = None
+            result_wb_b = None
         
         # Set manual exposure for video mode (we're in manual mode, so ASI_AUTO_MAX_EXP is not needed)
         result_manual = asi_lib.ASISetControlValue(self.camera_id, ASI_EXPOSURE, video_exposure, ASI_FALSE)
@@ -396,7 +415,14 @@ class ASICamera:
         asi_lib.ASIGetControlValue(self.camera_id, ASI_EXPOSURE, ctypes.byref(actual_exp), ctypes.byref(auto_exp))
         
         print(f"[start_stream] Set gain to {gain} (result: {result_gain}, actual: {actual_gain.value})")
-        print(f"[start_stream] Set white balance R: {wb_r} (result: {result_wb_r}), B: {wb_b} (result: {result_wb_b})")
+        if camera_info.IsColorCam:
+            wb_auto = camera_state.get('wb_auto', False)
+            if wb_auto:
+                print(f"[start_stream] Set auto white balance (R result: {result_wb_r}, B result: {result_wb_b})")
+            else:
+                wb_r = camera_state.get('wb_r', 50)
+                wb_b = camera_state.get('wb_b', 50)
+                print(f"[start_stream] Set manual white balance R: {wb_r} (result: {result_wb_r}), B: {wb_b} (result: {result_wb_b})")
         print(f"[start_stream] Set video exposure to {video_exposure} μs ({video_exposure/1000:.1f} ms)")
         print(f"[start_stream] Manual exposure result: {result_manual}, actual: {actual_exp.value} μs, auto: {auto_exp.value}")
         
