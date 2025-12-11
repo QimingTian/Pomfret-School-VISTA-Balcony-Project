@@ -695,7 +695,7 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 HStack {
                     Text("WB R:")
                         .frame(width: 80, alignment: .leading)
-                    Slider(value: wbR, in: 1...100, step: 1)
+                    Slider(value: wbR, in: 0...100, step: 1)
                         .disabled(wbAuto.wrappedValue)
                     TextField("", value: wbR, format: .number)
                         .textFieldStyle(.roundedBorder)
@@ -712,7 +712,7 @@ private func cameraCard(title: String, primaryCamera: SensorsModel.Camera, secon
                 HStack {
                     Text("WB B:")
                         .frame(width: 80, alignment: .leading)
-                    Slider(value: wbB, in: 1...100, step: 1)
+                    Slider(value: wbB, in: 0...100, step: 1)
                         .disabled(wbAuto.wrappedValue)
                     TextField("", value: wbB, format: .number)
                         .textFieldStyle(.roundedBorder)

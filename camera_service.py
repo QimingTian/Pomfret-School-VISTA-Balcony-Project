@@ -137,8 +137,8 @@ camera_state = {
     'exposure': 1000000,  # microseconds - for photo capture only
     'video_exposure': 100000,  # microseconds - max exposure for video streaming (controls frame rate)
     'gain': 50,
-    'wb_r': 50,  # White balance red channel (default, range 1-100)
-    'wb_b': 50,  # White balance blue channel (default, range 1-100)
+    'wb_r': 50,  # White balance red channel (default, range 0-100)
+    'wb_b': 50,  # White balance blue channel (default, range 0-100)
     'wb_auto': False,  # Auto white balance enabled (default: manual)
     'image_format': ASI_IMG_RGB24,  # Default to RGB24
     'current_frame': None,
